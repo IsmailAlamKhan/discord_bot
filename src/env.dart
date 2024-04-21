@@ -22,7 +22,7 @@ class DartDefineEnv implements Env {
   final String prefix = const String.fromEnvironment('PREFIX');
 
   @override
-  final int massPingChannelId = int.parse(const String.fromEnvironment('MASS_PING_CHANNEL_ID'));
+  final int massPingChannelId = int.parse(const String.fromEnvironment('MASS_PING_ID'));
 
   @override
   FutureOr<void> init() {}
@@ -38,7 +38,7 @@ class FileBasedEnv extends Env {
   @override
   String get prefix => _env['PREFIX']!;
   @override
-  int get massPingChannelId => int.parse(_env['MASS_PING_CHANNEL_ID']!);
+  int get massPingChannelId => int.parse(_env['MASS_PING_ID']!);
 
   @override
   FutureOr<void> init() {
@@ -58,7 +58,7 @@ class PlatformEnv extends Env {
   final String prefix = Platform.environment['PREFIX']!;
 
   @override
-  final int massPingChannelId = int.parse(Platform.environment['MASS_PING_CHANNEL_ID']!);
+  final int massPingChannelId = int.parse(Platform.environment['MASS_PING_ID']!);
 
   @override
   FutureOr<void> init() {}
