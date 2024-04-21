@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
-import 'package:dotenv/dotenv.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../src/commands/commands.dart';
+import '../src/providers.dart';
+import '../src/runnables/runnables.dart';
 
 class CommandArgument {
   final String argument;
@@ -18,41 +18,31 @@ class CommandArgument {
 
 enum Command {
   massPing(
-    "mass-ping",
-    "Mass ping a user. Usage: mass-ping <user-id> [stop](E.g. !mass-ping <@1231515227158347796> @user stop)",
-    [CommandArgument('user-id', false), CommandArgument('stop', true)],
+    command: "mass-ping",
+    description:
+        "Mass ping a user. Usage: mass-ping <user-id> [stop](E.g. !mass-ping <@1231515227158347796> @user stop)",
+    arguments: [CommandArgument('user-id', false), CommandArgument('stop', true)],
+    runnable: MassPingRunnable(),
   ),
-  help("help", "Get help for the bot commands.");
+  help(
+    // "help",
+    // "Get help for the bot commands.",
+    command: "help",
+    description: "Get help for the bot commands.",
+    runnable: HelpRunnable(),
+  );
 
   final String command;
   final String description;
   final List<CommandArgument> arguments;
-  const Command(
-    this.command,
-    this.description, [
+  final Runnable runnable;
+  const Command({
+    required this.command,
+    required this.description,
+    required this.runnable,
     this.arguments = const [],
-  ]);
+  });
 }
-
-final envProvider = Provider<DotEnv>((ref) {
-  return DotEnv()..load();
-});
-
-final botProvider = FutureProvider<NyxxGateway>((ref) {
-  final env = ref.read(envProvider);
-  final token = env['BOT_TOKEN']!;
-  return Nyxx.connectGateway(
-    token,
-    GatewayIntents.all,
-    options: GatewayClientOptions(
-      plugins: [
-        Logging(),
-        CliIntegration(),
-        IgnoreExceptions(),
-      ],
-    ),
-  );
-});
 
 Future<void> main() async {
   final ref = ProviderContainer();
@@ -97,39 +87,7 @@ Future<void> main() async {
       }
       msgChannel.sendMessage(MessageBuilder(content: buffer.toString()));
     } else {
-      await Commands.parseCommand(
-        ref: ref,
-        arguments: arguments,
-        channel: msgChannel,
-        command: command,
-      );
+      await command.runnable.run(ref: ref, arguments: arguments, channel: msgChannel);
     }
-
-    // /// Getting the arguments.
-    // String? userId;
-    // if (commandList.length > 1) {
-    //   final arguement = commandList[1];
-    //   if (arguement.startsWith('<@') && arguement.endsWith('>')) {
-    //     userId = commandList[1];
-    //   } else if (arguement == 'stop') {
-    //     msgChannel.sendMessage(MessageBuilder.content('Stopping mass ping...'));
-    //     cron.close();
-    //     return;
-    //   }
-    // }
-
-    // print("Command: $command, $userId");
-    // if (userId == null) {
-    //   msgChannel.sendMessage(MessageBuilder.content('Invalid command Please provide a user to ping.'));
-    //   return;
-    // }
-    // print("Command: $command, $userId");
-
-    // // if (!regex.hasMatch(userId[0])) {
-    // if (command == prefix.toLowerCase()) {
-    //   Commands.sendMassPing(msgChannel, userId);
-    // }
-    // return;
-    // // }
   });
 }
