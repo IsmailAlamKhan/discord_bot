@@ -3,6 +3,7 @@ import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../src/config.dart';
+import '../src/env.dart';
 import '../src/providers.dart';
 import '../src/runnables/config_runnable.dart';
 import '../src/runnables/runnables.dart';

@@ -2,7 +2,7 @@ import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
 import '../../bin/main.dart';
-import '../providers.dart';
+import '../env.dart';
 import 'runnables.dart';
 
 class HelpRunnable extends Runnable {
