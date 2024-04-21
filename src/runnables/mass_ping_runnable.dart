@@ -16,10 +16,11 @@ class MassPingRunnable extends Runnable {
   }) async {
     final bot = await ref.read(botProvider.future);
     final pingCrons = ref.read(pingCronsProvider);
+    final env = ref.read(envProvider);
 
     PartialTextChannel? massPingChannel;
     try {
-      massPingChannel = PartialTextChannel(id: Snowflake(1231544520693252188), manager: bot.channels);
+      massPingChannel = PartialTextChannel(id: Snowflake(env.massPingChannelId), manager: bot.channels);
       await massPingChannel.fetch();
     } on Exception catch (e) {
       if (e.toString().contains('Unknown Channel')) {
