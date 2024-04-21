@@ -12,6 +12,7 @@ class HelpRunnable extends Runnable {
     required ProviderContainer ref,
     required List<String> arguments,
     required PartialTextChannel channel,
+    required PartialMember member,
   }) {
     final helpMessage = Command.values.map((e) => '${e.command}: ${e.description}').join('\n');
     final env = ref.read(envProvider);

@@ -2,7 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
+import '../src/config.dart';
 import '../src/providers.dart';
+import '../src/runnables/config_runnable.dart';
 import '../src/runnables/runnables.dart';
 
 class CommandArgument {
@@ -23,6 +25,12 @@ enum Command {
         "Mass ping a user. Usage: mass-ping <user-id> [stop](E.g. !mass-ping <@1231515227158347796> @user stop)",
     arguments: [CommandArgument('user-id', false), CommandArgument('stop', true)],
     runnable: MassPingRunnable(),
+  ),
+  config(
+    command: "config",
+    description: "Get or set the bot configuration.",
+    arguments: [CommandArgument('prefix', true), CommandArgument('mass-ping-channel-id', true)],
+    runnable: ConfigRunnable(),
   ),
   help(
     // "help",
@@ -48,12 +56,40 @@ Future<void> main() async {
   final ref = ProviderContainer();
 
   final env = ref.read(envProvider);
-  await env.init();
+  final config = ref.read(configProvider);
 
-  final prefix = env.prefix;
+  await env.init();
+  config.init();
+
+  var (currentConfig, _) = config.getConfig;
+
   final bot = await ref.read(botProvider.future);
 
   bot.onMessageCreate.listen((event) async {
+    var prefix = currentConfig?.prefix;
+    final isBotMentioned = event.message.mentions.contains(bot.user);
+    if (isBotMentioned && currentConfig == null) {
+      event.message.channel.sendMessage(
+        MessageBuilder(
+          content: 'Bot is not configured. Running the config command.',
+        ),
+      );
+      await Command.config.runnable.run(
+        ref: ref,
+        arguments: [],
+        channel: event.message.channel,
+        member: event.member!,
+      );
+      final (newConfig, _) = ref.read(configProvider).getConfig;
+      currentConfig = newConfig;
+      prefix = newConfig?.prefix;
+      print('New prefix: $prefix');
+      return;
+    }
+    print('Prefix: $prefix');
+    if (prefix == null) {
+      return;
+    }
     if (!event.message.content.startsWith(prefix)) {
       print('Message does not start with prefix: $prefix: ${event.message.content}');
       return;
@@ -75,6 +111,7 @@ Future<void> main() async {
     if (commandList.length > 2) {
       arguments = commandList.sublist(2);
     }
+    final member = event.member;
 
     if (command == null) {
       final buffer = StringBuffer();
@@ -87,7 +124,12 @@ Future<void> main() async {
       }
       msgChannel.sendMessage(MessageBuilder(content: buffer.toString()));
     } else {
-      await command.runnable.run(ref: ref, arguments: arguments, channel: msgChannel);
+      await command.runnable.run(
+        ref: ref,
+        arguments: arguments,
+        channel: msgChannel,
+        member: member!,
+      );
     }
   });
 }

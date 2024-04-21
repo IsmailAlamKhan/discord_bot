@@ -11,5 +11,6 @@ abstract class Runnable {
     required ProviderContainer ref,
     required List<String> arguments,
     required PartialTextChannel channel,
+    required PartialMember member,
   });
 }

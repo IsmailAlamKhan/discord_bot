@@ -3,6 +3,7 @@ import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:riverpod/src/framework.dart';
 
+import '../config.dart';
 import '../providers.dart';
 import 'runnables.dart';
 
@@ -13,14 +14,19 @@ class MassPingRunnable extends Runnable {
     required ProviderContainer ref,
     required List<String> arguments,
     required PartialTextChannel channel,
+    required PartialMember member,
   }) async {
     final bot = await ref.read(botProvider.future);
     final pingCrons = ref.read(pingCronsProvider);
-    final env = ref.read(envProvider);
+    final (config, configError) = ref.read(configProvider).getConfig;
+    if (configError != null) {
+      await channel.sendMessage(MessageBuilder(content: configError));
+      return;
+    }
 
     PartialTextChannel? massPingChannel;
     try {
-      massPingChannel = PartialTextChannel(id: Snowflake(env.massPingChannelId), manager: bot.channels);
+      massPingChannel = PartialTextChannel(id: Snowflake(config!.massPingChannelID), manager: bot.channels);
       await massPingChannel.fetch();
     } on Exception catch (e) {
       if (e.toString().contains('Unknown Channel')) {
@@ -47,24 +53,47 @@ class MassPingRunnable extends Runnable {
       return;
     }
     final isStop = arguments.length > 1 && arguments[1] == 'stop';
-    var cron = pingCrons[userId];
+    var senderUserId = member.id.value.toString();
+    senderUserId = '<@$senderUserId>';
+
+    final key = PingCronKey(senderUserId: senderUserId, receiverUserId: userId);
+
+    var cron = pingCrons[key];
     if (isStop) {
-      await channel.sendMessage(MessageBuilder(content: 'Stopping mass ping for user $userId...'));
-      cron?.close();
-      pingCrons.remove(userId);
+      if (cron == null) {
+        await channel
+            .sendMessage(MessageBuilder(content: 'Looks like you have not started mass ping for user $userId...'));
+      } else {
+        await channel.sendMessage(MessageBuilder(content: 'Stopping mass ping for user $userId...'));
+        cron.close();
+        pingCrons.remove(key);
+      }
       return;
     }
     if (cron != null) {
       await channel.sendMessage(MessageBuilder(content: 'Mass ping already running for user $userId...'));
       return;
     }
-    cron = Cron();
-    pingCrons[userId] = cron;
+    // cron = Cron();
+    // pingCrons[
+    pingCrons.add(key);
+    cron = pingCrons[key]!;
 
     await channel.sendMessage(MessageBuilder(content: 'Starting mass ping for user $userId...'));
-    massPingChannel.sendMessage(MessageBuilder(content: '$userId ANSWER!!!!!'));
-    cron.schedule(Schedule.parse('*/2 * * * * *'), () async {
-      massPingChannel!.sendMessage(MessageBuilder(content: '$userId ANSWER!!!!!'));
-    });
+    final msg = '$userId ANSWER ME!!!!!!!!!!';
+    final memberDetails = await member.get();
+    final messageBuilder = MessageBuilder(embeds: [
+      EmbedBuilder(
+        author: EmbedAuthorBuilder(
+          name: memberDetails.user!.username,
+          iconUrl: memberDetails.user!.avatar.url,
+        ),
+        color: DiscordColor(0x00ff00),
+        description: msg,
+        footer: EmbedFooterBuilder(text: 'Mass ping'),
+      ),
+    ]);
+    massPingChannel.sendMessage(messageBuilder);
+    cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
   }
 }
