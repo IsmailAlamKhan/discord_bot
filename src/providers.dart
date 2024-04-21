@@ -1,15 +1,14 @@
 import 'package:cron/cron.dart';
-import 'package:dotenv/dotenv.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
-final envProvider = Provider<DotEnv>((ref) {
-  return DotEnv()..load();
-});
+import 'env.dart';
+
+final envProvider = Provider<Env>((ref) => PlatformEnv());
 
 final botProvider = FutureProvider<NyxxGateway>((ref) {
   final env = ref.read(envProvider);
-  final token = env['BOT_TOKEN']!;
+  final token = env.botToken;
   return Nyxx.connectGateway(
     token,
     GatewayIntents.all,

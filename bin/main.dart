@@ -48,9 +48,9 @@ Future<void> main() async {
   final ref = ProviderContainer();
 
   final env = ref.read(envProvider);
+  await env.init();
 
-  final prefix = env['PREFIX']!;
-
+  final prefix = env.prefix;
   final bot = await ref.read(botProvider.future);
 
   bot.onMessageCreate.listen((event) async {

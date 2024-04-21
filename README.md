@@ -12,11 +12,9 @@ dart pub get
 ```env
 BOT_TOKEN=<YOUR_BOT_TOKEN>
 PREFIX=<YOUR_BOT_PREFIX>
+FOOTER_TEXT=<YOUR_FOOTER_TEXT>
+
 ```
-
-
-
-
 
 ## Contributers
 Special thanks goes 
