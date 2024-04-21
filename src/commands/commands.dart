@@ -41,7 +41,7 @@ class Commands {
             description: "Welcome to the help menu. Here are the available commands: \n$helpMessage.",
             footer: EmbedFooterBuilder(
               text:
-                  "The bot was built by Md Ismail Alam Khan with a bit of help from Tomic Riedel. The code for the bot can be found at: ",
+                  "The bot was built by Md Ismail Alam Khan with a bit of help from Tomic Riedel. The code for the bot can be found at: http://github.com/ismailalamkhan/discord_bot",
             ),
           ),
         ],
