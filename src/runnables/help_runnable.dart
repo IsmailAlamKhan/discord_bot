@@ -1,7 +1,7 @@
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../../bin/main.dart';
+import '../commands.dart';
 import '../env.dart';
 import 'runnables.dart';
 

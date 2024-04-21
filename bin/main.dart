@@ -2,56 +2,10 @@ import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
+import '../src/commands.dart';
 import '../src/config.dart';
 import '../src/env.dart';
 import '../src/providers.dart';
-import '../src/runnables/config_runnable.dart';
-import '../src/runnables/runnables.dart';
-
-class CommandArgument {
-  final String argument;
-  final bool isOptional;
-  const CommandArgument(this.argument, this.isOptional);
-
-  @override
-  String toString() {
-    return argument;
-  }
-}
-
-enum Command {
-  massPing(
-    command: "mass-ping",
-    description:
-        "Mass ping a user. Usage: mass-ping <user-id> [stop](E.g. !mass-ping <@1231515227158347796> @user stop)",
-    arguments: [CommandArgument('user-id', false), CommandArgument('stop', true)],
-    runnable: MassPingRunnable(),
-  ),
-  config(
-    command: "config",
-    description: "Get or set the bot configuration.",
-    arguments: [CommandArgument('prefix', true), CommandArgument('mass-ping-channel-id', true)],
-    runnable: ConfigRunnable(),
-  ),
-  help(
-    // "help",
-    // "Get help for the bot commands.",
-    command: "help",
-    description: "Get help for the bot commands.",
-    runnable: HelpRunnable(),
-  );
-
-  final String command;
-  final String description;
-  final List<CommandArgument> arguments;
-  final Runnable runnable;
-  const Command({
-    required this.command,
-    required this.description,
-    required this.runnable,
-    this.arguments = const [],
-  });
-}
 
 Future<void> main() async {
   final ref = ProviderContainer();
@@ -107,7 +61,11 @@ Future<void> main() async {
     final commandList = msgContent.split(' ');
 
     /// Getting the command name.
-    final command = Command.values.firstWhereOrNull((element) => element.command == commandList[1]);
+    final command = Command.values.firstWhereOrNull(
+      (element) {
+        return element.command == commandList[1] || element.alias == commandList[1];
+      },
+    );
     List<String> arguments = [];
     if (commandList.length > 2) {
       arguments = commandList.sublist(2);

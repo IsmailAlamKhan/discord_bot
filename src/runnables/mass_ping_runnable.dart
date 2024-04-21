@@ -83,17 +83,19 @@ class MassPingRunnable extends Runnable {
     await channel.sendMessage(MessageBuilder(content: 'Starting mass ping for user $userId...'));
     final msg = '$userId ANSWER ME!!!!!!!!!!';
     final memberDetails = await member.get();
-    final messageBuilder = MessageBuilder(embeds: [
-      EmbedBuilder(
-        author: EmbedAuthorBuilder(
-          name: memberDetails.user!.username,
-          iconUrl: memberDetails.user!.avatar.url,
+    final messageBuilder = MessageBuilder(
+      content: msg,
+      embeds: [
+        EmbedBuilder(
+          author: EmbedAuthorBuilder(
+            name: memberDetails.user!.username,
+            iconUrl: memberDetails.user!.avatar.url,
+          ),
+          color: DiscordColor(0x00ff00),
+          footer: EmbedFooterBuilder(text: 'Mass ping'),
         ),
-        color: DiscordColor(0x00ff00),
-        description: msg,
-        footer: EmbedFooterBuilder(text: 'Mass ping'),
-      ),
-    ]);
+      ],
+    );
     massPingChannel.sendMessage(messageBuilder);
     cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
   }

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:riverpod/riverpod.dart';
 
-import '../bin/main.dart';
+import 'commands.dart';
 
 class Config {
   final String prefix;
