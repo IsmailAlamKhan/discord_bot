@@ -7,7 +7,6 @@ import 'package:riverpod/riverpod.dart';
 import 'commands.dart';
 import 'config.dart';
 import 'providers.dart';
-import 'runnables/hishaam_gay.dart';
 
 final messageListenerProvider = Provider<MessageListener>((ref) => MessageListener(ref));
 
@@ -73,17 +72,6 @@ class MessageListener {
             );
           }
         }
-      }
-
-      if (member.id.value == HishaamGayRunnable.hishaamUserId) {
-        await HishaamGayRunnable().run(
-          ref: ref.container,
-          arguments: [],
-          channel: msgChannel,
-          member: member,
-          messageCreateEvent: event,
-        );
-        return;
       }
 
       if (prefix == null) {

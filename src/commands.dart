@@ -86,12 +86,6 @@ class Command {
     description: "Get help for the bot commands",
     runnable: HelpRunnable(),
   );
-  static const hishamGay = Command(
-    command: "hisham-gay",
-    alias: 'gh',
-    description: "Say that Hisham is gay",
-    runnable: HelpRunnable(),
-  );
 
   static const values = [massPing, config, help];
 }
