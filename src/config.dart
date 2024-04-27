@@ -7,25 +7,17 @@ import 'commands.dart';
 
 class Config {
   final String prefix;
-  final int massPingChannelID;
 
-  const Config({
-    required this.prefix,
-    required this.massPingChannelID,
-  });
+  const Config({required this.prefix});
 
   Map<String, dynamic> toJson() {
     return {
       'prefix': prefix,
-      'mass-ping-channel-id': massPingChannelID,
     };
   }
 
   factory Config.fromJson(Map<String, dynamic> json) {
-    return Config(
-      prefix: json['prefix'] as String,
-      massPingChannelID: json['mass-ping-channel-id'],
-    );
+    return Config(prefix: json['prefix'] as String);
   }
 }
 

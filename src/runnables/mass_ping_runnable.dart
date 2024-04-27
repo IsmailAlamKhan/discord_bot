@@ -3,8 +3,8 @@ import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:riverpod/src/framework.dart';
 
-import '../config.dart';
 import '../cron.dart';
+import '../env.dart';
 import '../providers.dart';
 import 'runnables.dart';
 
@@ -16,24 +16,59 @@ class MassPingRunnable extends Runnable {
     required List<String> arguments,
     required PartialTextChannel channel,
     required PartialMember member,
+    required MessageCreateEvent messageCreateEvent,
   }) async {
     final bot = await ref.read(botProvider.future);
     final pingCrons = ref.read(pingCronsProvider);
-    final (config, configError) = ref.read(configProvider).getConfig;
-    if (configError != null) {
-      await channel.sendMessage(MessageBuilder(content: configError));
+
+    final userId = arguments[0];
+    var senderUserId = member.id.value.toString();
+    senderUserId = '<@$senderUserId>';
+    final isStop = arguments.length > 1 && arguments[1] == 'stop';
+    final env = ref.read(envProvider);
+    final adminUserId = env.adminUserId;
+
+    final key = PingCronKey(senderUserId: senderUserId, receiverUserId: userId);
+    final adminKey = PingCronKey(senderUserId: adminUserId, receiverUserId: userId);
+
+    if (arguments.isEmpty) {
+      await channel.sendMessage(MessageBuilder(content: 'Invalid command. Please provide a user to ping.'));
       return;
     }
+    if (!userId.contains('<@')) {
+      await channel.sendMessage(
+        MessageBuilder(content: 'Invalid command. Please provide a user to start massping or stop.'),
+      );
+      return;
+    }
+    var cron = pingCrons.get(key);
+    cron ??= pingCrons.get(adminKey);
 
-    PartialTextChannel? massPingChannel;
-    try {
-      massPingChannel = PartialTextChannel(id: Snowflake(config!.massPingChannelID), manager: bot.channels);
-      await massPingChannel.fetch();
-    } on Exception catch (e) {
-      if (e.toString().contains('Unknown Channel')) {
-        print('Channel not found in the guild.');
+    PartialTextChannel? massPingChannel = cron?.channel;
+    final guild = messageCreateEvent.guild!;
+    if (massPingChannel == null) {
+      try {
+        final sender = await member.fetch();
+        final receiver = await guild.members.get(Snowflake.parse(userId.replaceAll(RegExp(r'[<@!>]'), '')));
+        final senderName = sender.user!.username;
+        final receiverName = receiver.user!.username;
+        final channel = await guild.createChannel(
+          GuildChannelBuilder(
+            name: 'mass-ping-$receiverName-$senderName',
+            type: ChannelType.guildText,
+          ),
+          auditLogReason: 'Mass ping channel Created for user $receiverName requested by $senderName',
+        );
+        massPingChannel = PartialTextChannel(id: channel.id, manager: bot.channels);
+        await massPingChannel.fetch();
+      } on Exception catch (e) {
+        if (e.toString().contains('Unknown Channel')) {
+          print('Channel not found in the guild.');
+        } else {
+          print('Error creating channel: $e');
+        }
+        massPingChannel = null;
       }
-      massPingChannel = null;
     }
 
     if (massPingChannel == null) {
@@ -42,32 +77,16 @@ class MassPingRunnable extends Runnable {
       return;
     }
 
-    if (arguments.isEmpty) {
-      await channel.sendMessage(MessageBuilder(content: 'Invalid command. Please provide a user to ping.'));
-      return;
-    }
-    final userId = arguments[0];
-    if (!userId.contains('<@')) {
-      await channel.sendMessage(
-        MessageBuilder(content: 'Invalid command. Please provide a user to start massping or stop.'),
-      );
-      return;
-    }
-    final isStop = arguments.length > 1 && arguments[1] == 'stop';
-    var senderUserId = member.id.value.toString();
-    senderUserId = '<@$senderUserId>';
-
-    final key = PingCronKey(senderUserId: senderUserId, receiverUserId: userId);
-
-    var cron = pingCrons[key];
     if (isStop) {
       if (cron == null) {
         await channel
             .sendMessage(MessageBuilder(content: 'Looks like you have not started mass ping for user $userId...'));
       } else {
         await channel.sendMessage(MessageBuilder(content: 'Stopping mass ping for user $userId...'));
+        await massPingChannel.delete(auditLogReason: 'Mass ping channel deleted.');
         cron.close();
         pingCrons.remove(key);
+        pingCrons.remove(adminKey);
       }
       return;
     }
@@ -77,7 +96,8 @@ class MassPingRunnable extends Runnable {
     }
     // cron = Cron();
     // pingCrons[
-    pingCrons.add(key);
+    pingCrons.add(key, massPingChannel);
+    pingCrons.add(adminKey, massPingChannel);
     cron = pingCrons[key]!;
 
     await channel.sendMessage(MessageBuilder(content: 'Starting mass ping for user $userId...'));
@@ -96,7 +116,8 @@ class MassPingRunnable extends Runnable {
         ),
       ],
     );
+
     massPingChannel.sendMessage(messageBuilder);
-    cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
+    cron.cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
   }
 }

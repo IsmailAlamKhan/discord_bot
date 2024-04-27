@@ -12,5 +12,6 @@ abstract class Runnable {
     required List<String> arguments,
     required PartialTextChannel channel,
     required PartialMember member,
+    required MessageCreateEvent messageCreateEvent,
   });
 }
