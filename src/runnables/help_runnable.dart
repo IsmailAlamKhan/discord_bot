@@ -47,6 +47,11 @@ class HelpRunnable extends Runnable {
                       '${command.description}\n${command.arguments.isNotEmpty ? 'Arguments: ${command.arguments.join(', ')}' : ''}',
                   isInline: false,
                 ),
+              EmbedFieldBuilder(
+                name: 'waifu',
+                value: 'Get a random waifu image.',
+                isInline: false,
+              ),
             ],
 
             footer: EmbedFooterBuilder(text: env.footerText),

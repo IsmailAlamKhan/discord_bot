@@ -4,9 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 
+import 'bot.dart';
 import 'commands.dart';
 import 'config.dart';
-import 'providers.dart';
 
 final messageListenerProvider = Provider<MessageListener>((ref) => MessageListener(ref));
 

@@ -14,6 +14,7 @@ abstract class Env {
   String get botToken => _env['BOT_TOKEN']!;
   String get footerText => _env['FOOTER_TEXT']!;
   String get adminUserId => _env['ADMIN_USER_ID']!;
+  String get waifuApiUrl => _env['WAIFU_API_URL']!;
 
   FutureOr<void> init();
 

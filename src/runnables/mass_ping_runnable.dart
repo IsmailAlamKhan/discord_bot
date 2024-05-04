@@ -3,9 +3,9 @@ import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:riverpod/src/framework.dart';
 
+import '../bot.dart';
 import '../cron.dart';
 import '../env.dart';
-import '../providers.dart';
 import 'runnables.dart';
 
 class MassPingRunnable extends Runnable {

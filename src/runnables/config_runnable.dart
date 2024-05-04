@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:nyxx/nyxx.dart';
 import 'package:riverpod/src/framework.dart';
 
+import '../bot.dart';
 import '../config.dart';
 import '../constants.dart';
 import '../listen_to_message.dart';
-import '../providers.dart';
 import 'runnables.dart';
 
 Timer? _timerForEachInteraction;
