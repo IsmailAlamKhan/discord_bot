@@ -6,6 +6,7 @@ import 'package:riverpod/riverpod.dart';
 
 import 'bot.dart';
 import 'commands.dart';
+import 'commands/commands.dart';
 import 'config.dart';
 
 final messageListenerProvider = Provider<MessageListener>((ref) => MessageListener(ref));
@@ -71,6 +72,21 @@ class MessageListener {
               messageCreateEvent: event,
             );
           }
+        }
+      }
+      final slashCommands = ref.read(slashCommandsProvider);
+      for (final slashCommand in slashCommands.disabledCommands) {
+        if (msgContent.startsWith(slashCommand.name)) {
+          String reason;
+          if (slashCommand.runable.disabledReason != null) {
+            reason = 'Command is disabled. Reason: ${slashCommand.runable.disabledReason}';
+          } else {
+            reason = 'Command is disabled. Reason: Unknown';
+          }
+
+          await msgChannel
+              .sendMessage(MessageBuilder(content: '$reason\nPlease contact the bot owner for further information.'));
+          return;
         }
       }
 

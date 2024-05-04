@@ -2,18 +2,24 @@ import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:riverpod/riverpod.dart';
 
-import 'bot_commands.dart';
+import 'commands/commands.dart';
 import 'env.dart';
 
-final botProvider = FutureProvider<NyxxGateway>((ref) {
+final botProvider = FutureProvider<NyxxGateway>((ref) async {
   final env = ref.read(envProvider);
   final token = env.botToken;
-  final commands = CommandsPlugin(prefix: mentionOr((_) => '!'));
-  final botCommands = BotCommands(ref).initialize();
-  for (final command in botCommands) {
-    commands.addCommand(command);
+  final commandsPlugin = CommandsPlugin(prefix: mentionOr((_) => '!'));
+  final slashCommands = ref.read(slashCommandsProvider);
+  await slashCommands.initialize();
+  final commands = slashCommands.enabledCommands;
+  for (final command in commands) {
+    final chatCommand = await command.runable.initialize(ref);
+    if (chatCommand == null) {
+      continue;
+    }
+    commandsPlugin.addCommand(chatCommand);
   }
-  commands.onCommandError.listen((error) async {
+  commandsPlugin.onCommandError.listen((error) async {
     if (error is ConverterFailedException) {
       // ConverterFailedException can be thrown during autocompletion, in which case we can't
       // respond with an error. This check makes sure we can respond.
@@ -36,7 +42,7 @@ final botProvider = FutureProvider<NyxxGateway>((ref) {
         Logging(),
         CliIntegration(),
         IgnoreExceptions(),
-        commands,
+        commandsPlugin,
       ],
     ),
   );
