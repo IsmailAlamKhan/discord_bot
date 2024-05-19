@@ -1,10 +1,53 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart' hide Options;
 import 'package:riverpod/riverpod.dart';
 
+import '../db.dart';
 import '../dio.dart';
+import '../generate_waifu.dart';
+import '../user_waifu_preference.dart';
 import 'commands.dart';
+
+class MsgQueue {
+  MsgQueue() {
+    autoClearAfter10Minutes();
+  }
+
+  /// Map of user id to the number of requests they have made in the last 10 minutes
+  final Map<int, int> messages = {};
+
+  static const int maxMessages = 10;
+  static const Duration maxAge = Duration(minutes: 10);
+
+  /// Add a message to the queue
+  /// and return true if one user has made 10 requests in the last 10 minutes
+  bool addMessage(int userId) {
+    int? count = messages[userId];
+
+    if (count != null) {
+      count += 1;
+    } else {
+      count = 1;
+    }
+    print('count: $count');
+    messages[userId] = count;
+    bool shouldShow = count > maxMessages;
+    print('shouldShow: $shouldShow');
+    return shouldShow;
+  }
+
+  /// Remove all messages from the queue
+  void clear() {
+    messages.clear();
+  }
+
+  void autoClearAfter10Minutes() {
+    Timer.periodic(maxAge, (timer) => clear());
+  }
+}
 
 class WaifuTag {
   final int id;
@@ -27,14 +70,28 @@ class WaifuTag {
   String toString() {
     return '$name - $description';
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tag_id': id,
+      'name': name,
+      'description': description,
+      'is_nsfw': nsfw,
+    };
+  }
 }
 
 class WaifuCommand extends SlashRunnable {
-  WaifuCommand();
+  final MsgQueue msgQueue;
+  late DBController dbController;
+
+  WaifuCommand() : msgQueue = MsgQueue();
+
   List<WaifuTag>? nsfwTags;
   List<WaifuTag>? sfwTags;
 
   Future<void> getTags(Ref ref) async {
+    dbController = ref.read(dbControllerProvider);
     final waifuDio = ref.read(waifuDioProvider);
     try {
       final res = await waifuDio.get('tags?full=true');
@@ -70,19 +127,28 @@ class WaifuCommand extends SlashRunnable {
         id(
           'waifu',
           (ChatContext context) async {
+            final member = context.member!.id.value;
+
+            dbController.updateDB((db) => db.addWaifuPoint(member));
+            final point = dbController.getFromDB((db) => db.getWaifuPoint(member));
+
+            final shouldShow = msgQueue.addMessage(member);
+
+            if (shouldShow) {
+              await context.respond(
+                MessageBuilder(
+                  content:
+                      '**Aaara aaraaaa** Yamete kudasai!!!! You have requested too many waifu images in the last 10 minutes.',
+                ),
+              );
+            }
+
             final type = await context.getSelection(
               ['sfw', 'nsfw'],
               MessageBuilder(content: 'Select the type of waifu image you want to get. SFW or NSFW?'),
               authorOnly: true,
               timeout: const Duration(minutes: 1),
             );
-            // final forceGif = await context.getSelection(
-            //   ['yes', 'no'],
-            //   MessageBuilder(content: 'Do you want to force a gif image?'),
-            //   authorOnly: true,
-            //   timeout: const Duration(minutes: 1),
-            // );
-            // print(forceGif);
 
             final isNSFW = type == 'nsfw';
             print('SFW: $sfwTags');
@@ -100,43 +166,46 @@ class WaifuCommand extends SlashRunnable {
               },
               timeout: const Duration(minutes: 1),
             );
+            dbController
+                .updateDB((db) => db.addUserWaifuPreference(UserWaifuPreference(userId: member, waifuTag: category)));
 
             await context.respond(MessageBuilder(content: 'Generating a waifu image'));
-
-            final waifuDio = ref.read(waifuDioProvider);
-            final dio = ref.read(dioProvider);
-            try {
-              final uri = Uri(
-                queryParameters: {
-                  'included_tags': category.name,
-                  'height': '>1000',
-                  'is_nsfw': isNSFW.toString(),
-                },
-                path: 'search',
-              );
-              print(uri);
-              final res = await waifuDio.getUri(uri);
-              final url = res.data['images'].first['url'];
-
-              final download = await dio.get(url, options: Options(responseType: ResponseType.bytes));
-              var fileName = url.split('/').last;
-              if (type == 'nsfw') {
-                fileName = 'SPOILER_$fileName';
+            final waifu = await generateWaifu(category: category, ref: ref);
+            waifu.fold(
+              (l) => context.respond(MessageBuilder(content: l)),
+              (r) async {
+                final (data, fileName) = r;
+                await context.respond(MessageBuilder(
+                  content: 'Here is your waifu image. ${isNSFW ? '**WARNING: NSFW**' : ''}<@$member>',
+                  attachments: [AttachmentBuilder(data: data, fileName: fileName)],
+                ));
+              },
+            );
+            if (point % 10 == 0) {
+              final mostUsed = dbController.getFromDB((db) => db.getMostUsedWaifu(member));
+              if (mostUsed != null) {
+                await context.respond(
+                  MessageBuilder(
+                    content:
+                        'Congratulations! You have requested $point waifu images. For a celebration, here is a waifu image from your most used category: ${mostUsed.waifuTag.name} <@$member>(Generating....)',
+                  ),
+                );
+                generateWaifu(
+                  category: mostUsed.waifuTag,
+                  ref: ref,
+                ).then((value) {
+                  value.fold(
+                    (l) => print(l),
+                    (r) async {
+                      final (data, fileName) = r;
+                      await context.respond(MessageBuilder(
+                        content: 'Here is your celebration waifu image.<@$member>',
+                        attachments: [AttachmentBuilder(data: data, fileName: fileName)],
+                      ));
+                    },
+                  );
+                });
               }
-              await context.respond(MessageBuilder(
-                content: 'Here is your waifu image. ${isNSFW ? '**WARNING: NSFW**' : ''}',
-                attachments: [AttachmentBuilder(data: download.data, fileName: fileName)],
-              ));
-            } on DioException catch (e) {
-              print("DIO $e");
-              if (e.response?.data != null) {
-                await context.respond(MessageBuilder(content: e.response!.data['message']));
-              } else {
-                await context.respond(MessageBuilder(content: 'An error occurred while fetching the image.'));
-              }
-            } on Exception catch (e) {
-              print(e);
-              await context.respond(MessageBuilder(content: 'An error occurred while fetching the image.'));
             }
           },
         ));

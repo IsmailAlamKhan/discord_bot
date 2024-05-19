@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 
 import 'commands.dart';
+import 'encode_json.dart';
 
 class Config {
   final String prefix;
@@ -28,8 +29,7 @@ class ConfigController {
 
   void setConfig(Config config) {
     final file = File('config.json');
-
-    file.writeAsStringSync(jsonEncode(config.toJson()));
+    file.writeAsStringSync(encodeJson(config.toJson()));
 
     _config = config;
   }
