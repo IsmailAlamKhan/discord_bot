@@ -14,4 +14,13 @@ abstract class Runnable {
     required PartialMember member,
     required MessageCreateEvent messageCreateEvent,
   });
+
+  MessageBuilder messageBuilder(MessageCreateEvent messageCreateEvent) =>
+      MessageBuilder(replyId: messageCreateEvent.message.id);
+
+  Future<void> sendMessage({
+    required PartialTextChannel channel,
+    required MessageBuilder message,
+  }) =>
+      channel.sendMessage(message);
 }

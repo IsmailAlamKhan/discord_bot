@@ -8,17 +8,28 @@ import 'encode_json.dart';
 
 class Config {
   final String prefix;
+  final int? waifuCelebrateChannel;
 
-  const Config({required this.prefix});
+  const Config({required this.prefix, this.waifuCelebrateChannel});
 
   Map<String, dynamic> toJson() {
     return {
       'prefix': prefix,
+      if (waifuCelebrateChannel != null) 'waifu-celebrate-channel': waifuCelebrateChannel,
     };
   }
 
   factory Config.fromJson(Map<String, dynamic> json) {
-    return Config(prefix: json['prefix'] as String);
+    return Config(
+      prefix: json['prefix'] as String,
+      waifuCelebrateChannel: json['waifu-celebrate-channel'] as int?,
+    );
+  }
+  Config copyWith({String? prefix, int? waifuCelebrateChannel}) {
+    return Config(
+      prefix: prefix ?? this.prefix,
+      waifuCelebrateChannel: waifuCelebrateChannel ?? this.waifuCelebrateChannel,
+    );
   }
 }
 

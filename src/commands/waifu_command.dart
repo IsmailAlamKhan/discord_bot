@@ -9,6 +9,7 @@ import '../db.dart';
 import '../dio.dart';
 import '../generate_waifu.dart';
 import '../user_waifu_preference.dart';
+import '../waifu_celebrate.dart';
 import 'commands.dart';
 
 class MsgQueue {
@@ -130,7 +131,9 @@ class WaifuCommand extends SlashRunnable {
             final member = context.member!.id.value;
 
             dbController.updateDB((db) => db.addWaifuPoint(member));
-            final point = dbController.getFromDB((db) => db.getWaifuPoint(member));
+            final point = dbController.getFromDB((db) => db.getWaifuPoints(member));
+            final waifuCelebrate = ref.read(waifuCelebrateProvider);
+            waifuCelebrate.celebrate(member, point);
 
             final shouldShow = msgQueue.addMessage(member);
 
@@ -181,32 +184,6 @@ class WaifuCommand extends SlashRunnable {
                 ));
               },
             );
-            if (point % 10 == 0) {
-              final mostUsed = dbController.getFromDB((db) => db.getMostUsedWaifu(member));
-              if (mostUsed != null) {
-                await context.respond(
-                  MessageBuilder(
-                    content:
-                        'Congratulations! You have requested $point waifu images. For a celebration, here is a waifu image from your most used category: ${mostUsed.waifuTag.name} <@$member>(Generating....)',
-                  ),
-                );
-                generateWaifu(
-                  category: mostUsed.waifuTag,
-                  ref: ref,
-                ).then((value) {
-                  value.fold(
-                    (l) => print(l),
-                    (r) async {
-                      final (data, fileName) = r;
-                      await context.respond(MessageBuilder(
-                        content: 'Here is your celebration waifu image.<@$member>',
-                        attachments: [AttachmentBuilder(data: data, fileName: fileName)],
-                      ));
-                    },
-                  );
-                });
-              }
-            }
           },
         ));
 

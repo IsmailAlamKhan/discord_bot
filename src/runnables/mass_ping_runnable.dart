@@ -31,13 +31,11 @@ class MassPingRunnable extends Runnable {
     final key = PingCronKey(senderUserId: senderUserId, receiverUserId: userId);
     final adminKey = PingCronKey(senderUserId: adminUserId, receiverUserId: userId);
 
-    if (arguments.isEmpty) {
-      await channel.sendMessage(MessageBuilder(content: 'Invalid command. Please provide a user to ping.'));
-      return;
-    }
-    if (!userId.contains('<@')) {
-      await channel.sendMessage(
-        MessageBuilder(content: 'Invalid command. Please provide a user to start massping or stop.'),
+    if (arguments.isEmpty || !userId.contains('<@')) {
+      sendMessage(
+        channel: channel,
+        message: this.messageBuilder(messageCreateEvent)
+          ..content = 'Invalid command. Please provide a user to start massping or stop.',
       );
       return;
     }
@@ -73,16 +71,26 @@ class MassPingRunnable extends Runnable {
 
     if (massPingChannel == null) {
       print('Mass ping channel not found in the guild-=----.');
-      await channel.sendMessage(MessageBuilder(content: 'Mass ping channel not found in the guild.'));
+
+      await sendMessage(
+        channel: channel,
+        message: this.messageBuilder(messageCreateEvent)..content = 'Mass ping channel not found in the guild.',
+      );
       return;
     }
 
     if (isStop) {
       if (cron == null) {
-        await channel
-            .sendMessage(MessageBuilder(content: 'Looks like you have not started mass ping for user $userId...'));
+        await sendMessage(
+          channel: channel,
+          message: this.messageBuilder(messageCreateEvent)
+            ..content = 'Looks like you have not started mass ping for user $userId...',
+        );
       } else {
-        await channel.sendMessage(MessageBuilder(content: 'Stopping mass ping for user $userId...'));
+        await sendMessage(
+          channel: channel,
+          message: this.messageBuilder(messageCreateEvent)..content = 'Stopping mass ping for user $userId...',
+        );
         await massPingChannel.delete(auditLogReason: 'Mass ping channel deleted.');
         cron.close();
         pingCrons.remove(key);
@@ -91,21 +99,25 @@ class MassPingRunnable extends Runnable {
       return;
     }
     if (cron != null) {
-      await channel.sendMessage(MessageBuilder(content: 'Mass ping already running for user $userId...'));
+      await sendMessage(
+        channel: channel,
+        message: this.messageBuilder(messageCreateEvent)..content = 'Mass ping already running for user $userId...',
+      );
       return;
     }
-    // cron = Cron();
-    // pingCrons[
     pingCrons.add(key, massPingChannel);
     pingCrons.add(adminKey, massPingChannel);
     cron = pingCrons[key]!;
 
-    await channel.sendMessage(MessageBuilder(content: 'Starting mass ping for user $userId...'));
+    await sendMessage(
+      channel: channel,
+      message: this.messageBuilder(messageCreateEvent)..content = 'Starting mass ping for user $userId...',
+    );
     final msg = '$userId ANSWER ME!!!!!!!!!!';
     final memberDetails = await member.get();
-    final messageBuilder = MessageBuilder(
-      content: msg,
-      embeds: [
+    final messageBuilder = this.messageBuilder(messageCreateEvent)
+      ..content = msg
+      ..embeds = [
         EmbedBuilder(
           author: EmbedAuthorBuilder(
             name: memberDetails.user!.username,
@@ -114,10 +126,13 @@ class MassPingRunnable extends Runnable {
           color: DiscordColor(0x00ff00),
           footer: EmbedFooterBuilder(text: 'Mass ping'),
         ),
-      ],
-    );
+      ];
 
-    massPingChannel.sendMessage(messageBuilder);
+    // massPingChannel.sendMessage(messageBuilder);
+    sendMessage(
+      channel: massPingChannel,
+      message: messageBuilder,
+    );
     cron.cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
   }
 }

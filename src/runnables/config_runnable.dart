@@ -31,12 +31,13 @@ class ConfigRunnable extends Runnable {
       _timerForEachInteraction?.cancel();
       _timerForEachInteraction = Timer(duration, () {
         timedOut = true;
-        channel.sendMessage(
-          createAlertMessage(
+        sendMessage(
+          channel: channel,
+          message: createAlertMessage(
             color: EmdedColor.red,
             content: 'Timed out',
             description: 'You took too long to respond. Please try running the command again.',
-          ),
+          )..replyId = messageCreateEvent.message.id,
         );
         _timerForEachInteraction?.cancel();
       });
@@ -48,13 +49,20 @@ class ConfigRunnable extends Runnable {
     }
 
     final bot = await ref.read(botProvider.future);
+    sendMessage(
+      channel: channel,
+      message: createAlertMessage(
+        color: EmdedColor.green,
+        content: 'Welcome to the config command. This command will help you set up the bot for the first time.',
+      )..replyId = messageCreateEvent.message.id,
+    );
+    // await channel.sendMessage(MessageBuilder(content: 'Please provide a prefix for the bot.'));
     await channel.sendMessage(
       createAlertMessage(
         color: EmdedColor.green,
-        content: 'Welcome to the config command. This command will help you set up the bot for the first time.',
-      ),
+        content: 'Please provide a prefix for the bot.',
+      )..replyId = messageCreateEvent.message.id,
     );
-    await channel.sendMessage(MessageBuilder(content: 'Please provide a prefix for the bot.'));
     startTimer();
     final prefixCompleter = Completer<String?>();
 
@@ -80,12 +88,13 @@ class ConfigRunnable extends Runnable {
       final message = event.message.content;
       final isSingleWord = message.split(' ').length == 1;
       if (!isSingleWord) {
-        await channel.sendMessage(
-          createAlertMessage(
+        sendMessage(
+          channel: channel,
+          message: createAlertMessage(
             color: EmdedColor.red,
             content: 'Invalid prefix.',
             description: 'Prefix should be a single word.',
-          ),
+          )..replyId = event.message.id,
         );
 
         return;
@@ -101,21 +110,23 @@ class ConfigRunnable extends Runnable {
       cancelTimer();
     }
 
-    await channel.sendMessage(
-      createAlertMessage(
+    sendMessage(
+      channel: channel,
+      message: createAlertMessage(
         color: EmdedColor.green,
         content: 'Prefix set',
         description: 'Prefix has been set to: $prefix.',
-      ),
+      )..replyId = messageCreateEvent.message.id,
     );
     ref.read(configProvider).setConfig(Config(prefix: "!${prefix!}"));
-    await channel.sendMessage(
-      createAlertMessage(
+    sendMessage(
+      channel: channel,
+      message: createAlertMessage(
         color: EmdedColor.green,
         content: 'Congrats!',
         description:
             'Config has been set you can now start using the bot using !$prefix. Type !$prefix help for more info',
-      ),
+      )..replyId = messageCreateEvent.message.id,
     );
     await ref.read(messageListenerProvider).restart();
   }

@@ -31,7 +31,7 @@ class DB {
     );
   }
 
-  int getWaifuPoint(int userID) {
+  int getWaifuPoints(int userID) {
     return waifuPoints[userID] ?? 0;
   }
 

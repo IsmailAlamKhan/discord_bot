@@ -18,23 +18,13 @@ class HelpRunnable extends Runnable {
     required MessageCreateEvent messageCreateEvent,
   }) {
     final (config, _) = ref.read(configProvider).getConfig;
-    // final helpMessage = Command.values.map(
-    //   (e) {
-    //     String key;
-    //     String value = e.description;
-    //     if (e.alias != null) {
-    //       key = '${e.command} (${e.alias})';
-    //     } else {
-    //       key = e.command;
-    //     }
-    //     return '**$key**: $value';
-    //   },
-    // ).join('\n\n');
+
     final env = ref.read(envProvider);
     final slashCommands = ref.read(slashCommandsProvider);
-    return channel.sendMessage(
-      MessageBuilder(
-        embeds: [
+    return sendMessage(
+      channel: channel,
+      message: messageBuilder(messageCreateEvent)
+        ..embeds = [
           EmbedBuilder(
             color: DiscordColor(0xFA383B),
             title: 'Welcome to the help menu!!',
@@ -83,7 +73,6 @@ class HelpRunnable extends Runnable {
               footer: EmbedFooterBuilder(text: 'Please contact the bot owner for further information.'),
             ),
         ],
-      ),
     );
   }
 }
