@@ -30,12 +30,12 @@ class MassPingRunnable extends Runnable {
 
     final key = PingCronKey(senderUserId: senderUserId, receiverUserId: userId);
     final adminKey = PingCronKey(senderUserId: adminUserId, receiverUserId: userId);
+    final msgBuilder = this.messageBuilder(messageCreateEvent);
 
     if (arguments.isEmpty || !userId.contains('<@')) {
       sendMessage(
         channel: channel,
-        message: this.messageBuilder(messageCreateEvent)
-          ..content = 'Invalid command. Please provide a user to start massping or stop.',
+        message: msgBuilder..content = 'Invalid command. Please provide a user to start massping or stop.',
       );
       return;
     }
@@ -74,22 +74,22 @@ class MassPingRunnable extends Runnable {
 
       await sendMessage(
         channel: channel,
-        message: this.messageBuilder(messageCreateEvent)..content = 'Mass ping channel not found in the guild.',
+        message: msgBuilder..content = 'Mass ping channel not found in the guild.',
       );
       return;
     }
+    print('channel id: ${massPingChannel.id.value}');
 
     if (isStop) {
       if (cron == null) {
         await sendMessage(
           channel: channel,
-          message: this.messageBuilder(messageCreateEvent)
-            ..content = 'Looks like you have not started mass ping for user $userId...',
+          message: msgBuilder..content = 'Looks like you have not started mass ping for user $userId...',
         );
       } else {
         await sendMessage(
           channel: channel,
-          message: this.messageBuilder(messageCreateEvent)..content = 'Stopping mass ping for user $userId...',
+          message: msgBuilder..content = 'Stopping mass ping for user $userId...',
         );
         await massPingChannel.delete(auditLogReason: 'Mass ping channel deleted.');
         cron.close();
@@ -101,7 +101,7 @@ class MassPingRunnable extends Runnable {
     if (cron != null) {
       await sendMessage(
         channel: channel,
-        message: this.messageBuilder(messageCreateEvent)..content = 'Mass ping already running for user $userId...',
+        message: msgBuilder..content = 'Mass ping already running for user $userId...',
       );
       return;
     }
@@ -111,11 +111,12 @@ class MassPingRunnable extends Runnable {
 
     await sendMessage(
       channel: channel,
-      message: this.messageBuilder(messageCreateEvent)..content = 'Starting mass ping for user $userId...',
+      message: msgBuilder..content = 'Starting mass ping for user $userId...',
     );
     final msg = '$userId ANSWER ME!!!!!!!!!!';
     final memberDetails = await member.get();
-    final messageBuilder = this.messageBuilder(messageCreateEvent)
+
+    final messageBuilder = messageBuilderWithoutReply(messageCreateEvent)
       ..content = msg
       ..embeds = [
         EmbedBuilder(
