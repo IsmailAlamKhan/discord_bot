@@ -1,6 +1,6 @@
 {
   "waifu-points": {
-    "653095606809657344": 11
+    "653095606809657344": 15
   },
   "user-waifu-preferences": [
     {
@@ -73,6 +73,33 @@
         "name": "raiden-shogun",
         "description": "Genshin Impact's Raiden Shogun is a fierce lady in the Genshin ranks.",
         "is_nsfw": false
+      }
+    },
+    {
+      "userId": 653095606809657344,
+      "waifuTag": {
+        "tag_id": 13,
+        "name": "maid",
+        "description": "Cute womans or girl employed to do domestic work in their working uniform.",
+        "is_nsfw": false
+      }
+    },
+    {
+      "userId": 653095606809657344,
+      "waifuTag": {
+        "tag_id": 10,
+        "name": "selfies",
+        "description": "A photo-like image of a waifu.",
+        "is_nsfw": false
+      }
+    },
+    {
+      "userId": 653095606809657344,
+      "waifuTag": {
+        "tag_id": 6,
+        "name": "milf",
+        "description": "A sexually attractive middle-aged woman.",
+        "is_nsfw": true
       }
     }
   ]

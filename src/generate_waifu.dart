@@ -26,6 +26,7 @@ Future<Either<String, (List<int>, String)>> generateWaifu({
     final url = res.data['images'].first['url'];
 
     final download = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+    print('Downloaded image from $url');
     var fileName = url.split('/').last;
     if (isNSFW) {
       fileName = 'SPOILER_$fileName';
