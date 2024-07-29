@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   red-door-bot:
     # image: red-door-bot
