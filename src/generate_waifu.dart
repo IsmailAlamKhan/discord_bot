@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod/riverpod.dart';
@@ -12,6 +14,7 @@ Future<Either<String, (List<int>, String)>> generateWaifu({
   final isNSFW = category.nsfw;
   final waifuDio = ref.read(waifuDioProvider);
   final dio = ref.read(dioProvider);
+  final file = File('waifu.jpg');
   try {
     final uri = Uri(
       queryParameters: {
@@ -24,14 +27,16 @@ Future<Either<String, (List<int>, String)>> generateWaifu({
     print(uri);
     final res = await waifuDio.getUri(uri);
     final url = res.data['images'].first['url'];
-
-    final download = await dio.get(url, options: Options(responseType: ResponseType.bytes));
+    file.createSync();
+    await dio.download(url, file.path);
     print('Downloaded image from $url');
     var fileName = url.split('/').last;
     if (isNSFW) {
       fileName = 'SPOILER_$fileName';
     }
-    return right((download.data, fileName));
+    final bytes = file.readAsBytesSync();
+    file.deleteSync();
+    return right((bytes, fileName));
   } on DioException catch (e) {
     print("DIO $e");
     if (e.response?.data != null) {
@@ -42,5 +47,9 @@ Future<Either<String, (List<int>, String)>> generateWaifu({
   } on Exception catch (e) {
     print(e);
     return left('An error occurred while fetching the image.');
+  } finally {
+    if (file.existsSync()) {
+      file.deleteSync();
+    }
   }
 }

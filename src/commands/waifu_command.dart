@@ -171,8 +171,10 @@ class WaifuCommand extends SlashRunnable {
             );
             dbController
                 .updateDB((db) => db.addUserWaifuPreference(UserWaifuPreference(userId: member, waifuTag: category)));
-
+            final channel = context.channel;
             await context.respond(MessageBuilder(content: 'Generating a waifu image'));
+
+            await channel.manager.triggerTyping(channel.id);
             final waifu = await generateWaifu(category: category, ref: ref);
             waifu.fold(
               (l) => context.respond(MessageBuilder(content: l)),
