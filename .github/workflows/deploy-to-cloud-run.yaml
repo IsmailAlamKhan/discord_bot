@@ -48,7 +48,15 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }} # Store the JSON key content in GitHub Secrets
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2 # Use the latest major version
+        uses: google-github-actions/setup-gcloud@v2 # Using v2 explicitly
+        # with:
+        #   version: 'latest' # You can try specifying 'latest' or a specific version
+
+      - name: Update all gcloud components
+        run: gcloud components update --quiet
+
+      - name: Display gcloud version
+        run: gcloud version
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
