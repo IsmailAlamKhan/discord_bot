@@ -71,7 +71,6 @@ jobs:
             --set-secrets=BOT_TOKEN=${{ env.SECRET_BOT_TOKEN_NAME }}:latest,ADMIN_USER_ID=${{ env.SECRET_ADMIN_ID_NAME }}:latest,FOOTER_TEXT=${{ env.SECRET_FOOTER_TEXT_NAME }}:latest,WAIFU_API_URL=${{ env.SECRET_WAIFU_API_NAME }}:latest,GUILD_ID=${{ env.SECRET_GUILD_ID_NAME }}:latest \
             --cpu-always-allocated \
             --min-instances=1 \
-            --allow-unauthenticated=false \
             --quiet \
             --format="value(status.url)" # To capture the URL
 
