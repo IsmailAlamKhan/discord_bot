@@ -78,9 +78,9 @@ jobs:
             GUILD_ID=${{ env.SECRET_GUILD_ID_NAME }}:latest
           # === Set Cloud Run flags ===
           flags: |-
-            --cpu-always-allocated
-            --min-instances=1
             --quiet
+            # --cpu-always-allocated
+            # --min-instances=1
 
       - name: Output Cloud Run service URL (if needed)
         run: |
