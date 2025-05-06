@@ -81,9 +81,6 @@ jobs:
             --cpu-always-allocated
             --min-instances=1
             --quiet
-            # Add other flags below if needed, each on a new line, e.g.:
-            # --memory=512Mi
-            # --cpu=1
 
       - name: Output Cloud Run service URL (if needed)
         run: |
