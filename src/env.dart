@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 
 final envProvider = Provider<Env>((ref) {
-  // return PlatformEnv();
   return PlatformEnv();
+  // return FileBasedEnv();
 });
 
 abstract class Env {

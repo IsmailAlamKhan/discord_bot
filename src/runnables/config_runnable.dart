@@ -7,6 +7,7 @@ import '../bot.dart';
 import '../config.dart';
 import '../constants.dart';
 import '../listen_to_message.dart';
+import '../member_change.dart';
 import 'runnables.dart';
 
 Timer? _timerForEachInteraction;
@@ -116,7 +117,10 @@ class ConfigRunnable extends Runnable {
         color: EmdedColor.green,
         content: 'Prefix set',
         description: 'Prefix has been set to: $prefix.',
-      )..replyId = messageCreateEvent.message.id,
+      )..referencedMessage = MessageReferenceBuilder(
+          messageId: messageCreateEvent.message.id,
+          type: MessageReferenceType.defaultType,
+        ),
     );
     ref.read(configProvider).setConfig(Config(prefix: "!${prefix!}"));
     sendMessage(
@@ -126,8 +130,12 @@ class ConfigRunnable extends Runnable {
         content: 'Congrats!',
         description:
             'Config has been set you can now start using the bot using !$prefix. Type !$prefix help for more info',
-      )..replyId = messageCreateEvent.message.id,
+      )..referencedMessage = MessageReferenceBuilder(
+          messageId: messageCreateEvent.message.id,
+          type: MessageReferenceType.defaultType,
+        ),
     );
     await ref.read(messageListenerProvider).restart();
+    await ref.read(memberChangeProvider).restart();
   }
 }

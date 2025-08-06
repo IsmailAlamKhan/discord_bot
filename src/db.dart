@@ -10,13 +10,15 @@ import 'user_waifu_preference.dart';
 class DB {
   final Map<int, int> waifuPoints;
   final List<UserWaifuPreference> userWaifuPreferences;
+  final Map<String, String> userNicknames;
 
-  DB({required this.waifuPoints, required this.userWaifuPreferences});
+  DB({required this.waifuPoints, required this.userWaifuPreferences, required this.userNicknames});
 
   Map<String, dynamic> toMap() {
     return {
       'waifu-points': {for (final e in waifuPoints.entries) e.key.toString(): e.value},
       'user-waifu-preferences': userWaifuPreferences.map((e) => e.toJson()).toList(),
+      'user-nicknames': {for (final e in userNicknames.entries) e.key.toString(): e.value},
     };
   }
 
@@ -28,6 +30,9 @@ class DB {
       userWaifuPreferences:
           (map['user-waifu-preferences'] as List<dynamic>?)?.map((e) => UserWaifuPreference.fromJson(e)).toList() ??
               <UserWaifuPreference>[],
+      userNicknames: (map['user-nicknames'] as Map<dynamic, dynamic>?)
+              ?.map<String, String>((key, value) => MapEntry(key, value as String)) ??
+          {},
     );
   }
 
@@ -63,6 +68,15 @@ class DB {
       return UserWaifuPreference(userId: userId, waifuTag: mostUsed.last.key);
     }
     return null;
+  }
+
+  String? getUserNickname(String userId) {
+    return userNicknames[userId];
+  }
+
+  DB setUserNickname(String userId, String nickname) {
+    userNicknames[userId] = nickname;
+    return this;
   }
 }
 

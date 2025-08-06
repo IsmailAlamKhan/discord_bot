@@ -34,9 +34,10 @@ final botProvider = FutureProvider<NyxxGateway>((ref) async {
       print('Uncaught error: $error');
     }
   });
+
   return Nyxx.connectGateway(
     token,
-    GatewayIntents.allUnprivileged | GatewayIntents.messageContent,
+    GatewayIntents.allUnprivileged | GatewayIntents.messageContent | GatewayIntents.guildMembers,
     options: GatewayClientOptions(
       plugins: [
         Logging(),
