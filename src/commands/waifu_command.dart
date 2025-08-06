@@ -8,47 +8,10 @@ import 'package:riverpod/riverpod.dart';
 import '../db.dart';
 import '../dio.dart';
 import '../generate_waifu.dart';
+import '../msg_queue.dart';
 import '../user_waifu_preference.dart';
 import '../waifu_celebrate.dart';
 import 'commands.dart';
-
-class MsgQueue {
-  MsgQueue() {
-    autoClearAfter10Minutes();
-  }
-
-  /// Map of user id to the number of requests they have made in the last 10 minutes
-  final Map<int, int> messages = {};
-
-  static const int maxMessages = 10;
-  static const Duration maxAge = Duration(minutes: 10);
-
-  /// Add a message to the queue
-  /// and return true if one user has made 10 requests in the last 10 minutes
-  bool addMessage(int userId) {
-    int? count = messages[userId];
-
-    if (count != null) {
-      count += 1;
-    } else {
-      count = 1;
-    }
-    print('count: $count');
-    messages[userId] = count;
-    bool shouldShow = count > maxMessages;
-    print('shouldShow: $shouldShow');
-    return shouldShow;
-  }
-
-  /// Remove all messages from the queue
-  void clear() {
-    messages.clear();
-  }
-
-  void autoClearAfter10Minutes() {
-    Timer.periodic(maxAge, (timer) => clear());
-  }
-}
 
 class WaifuTag {
   final int id;
@@ -86,13 +49,19 @@ class WaifuCommand extends SlashRunnable {
   final MsgQueue msgQueue;
   late DBController dbController;
 
+  @override
+  final String name = 'waifu';
+
+  @override
+  final String description = 'Get a random waifu image.';
+
   WaifuCommand() : msgQueue = MsgQueue();
 
   List<WaifuTag>? nsfwTags;
   List<WaifuTag>? sfwTags;
 
   Future<void> getTags(Ref ref) async {
-    dbController = ref.read(dbControllerProvider);
+    dbController = ref.read(dbProvider);
     final waifuDio = ref.read(waifuDioProvider);
     try {
       final res = await waifuDio.get('tags?full=true');
@@ -120,13 +89,13 @@ class WaifuCommand extends SlashRunnable {
       return Future.value(null);
     }
     final waifu = ChatCommand(
-        'waifu',
-        'Get a random waifu image.',
+        name,
+        description,
         options: CommandOptions(
           type: CommandType.all,
         ),
         id(
-          'waifu',
+          name,
           (ChatContext context) async {
             final member = context.member!.id.value;
 

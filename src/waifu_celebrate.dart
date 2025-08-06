@@ -41,7 +41,7 @@ class WaifuCelebrate {
 
   Future<void> celebrate(int userId, int point) async {
     if (point % celebratePointsMod != 0) return;
-    final dbController = ref.read(dbControllerProvider);
+    final dbController = ref.read(dbProvider);
     final bot = await ref.read(botProvider.future);
     final mostUsed = dbController.getFromDB((db) => db.getMostUsedWaifu(userId));
     final (config, _) = ref.read(configProvider).getConfig;

@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 
 final envProvider = Provider<Env>((ref) {
-  return PlatformEnv();
-  // return FileBasedEnv();
+  // return PlatformEnv();
+  return FileBasedEnv();
 });
 
 abstract class Env {
@@ -16,6 +16,8 @@ abstract class Env {
   String get adminUserId => _env['ADMIN_USER_ID']!;
   String get waifuApiUrl => _env['WAIFU_API_URL']!;
   String get guildId => _env['GUILD_ID']!;
+  String get geminiApiKey => _env['GEMINI_API_KEY']!;
+  String? get geminiContext => _env['GEMINI_CONTEXT'];
 
   FutureOr<void> init();
 
@@ -31,6 +33,9 @@ abstract class Env {
     }
     if (env['ADMIN_USER_ID'] == null) {
       errors.add('ADMIN_USER_ID is not set in the environment variables.');
+    }
+    if (env['GEMINI_API_KEY'] == null) {
+      errors.add('GEMINI_API_KEY is not set in the environment variables.');
     }
     if (errors.isNotEmpty) {
       isValid = false;

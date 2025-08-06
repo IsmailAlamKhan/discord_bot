@@ -9,7 +9,6 @@ import 'encode_json.dart';
 class Config {
   final String prefix;
   final int? waifuCelebrateChannel;
-
   const Config({required this.prefix, this.waifuCelebrateChannel});
 
   Map<String, dynamic> toJson() {
@@ -25,7 +24,7 @@ class Config {
       waifuCelebrateChannel: json['waifu-celebrate-channel'] as int?,
     );
   }
-  Config copyWith({String? prefix, int? waifuCelebrateChannel}) {
+  Config copyWith({String? prefix, int? waifuCelebrateChannel, String? geminiContext}) {
     return Config(
       prefix: prefix ?? this.prefix,
       waifuCelebrateChannel: waifuCelebrateChannel ?? this.waifuCelebrateChannel,

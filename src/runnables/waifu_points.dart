@@ -16,7 +16,7 @@ class WaifuPointsRunnable extends Runnable {
     required MessageCreateEvent messageCreateEvent,
   }) async {
     // final message = messageCreateEvent.message.content;
-    final db = ref.read(dbControllerProvider);
+    final db = ref.read(dbProvider);
     final mentions = messageCreateEvent.message.mentions;
     int userID;
     bool isCurrentUser;

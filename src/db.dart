@@ -124,4 +124,4 @@ class DBController {
   }
 }
 
-final dbControllerProvider = Provider((ref) => DBController()..init());
+final dbProvider = Provider((ref) => DBController()..init());

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:riverpod/riverpod.dart';
 
+import 'gemini_command.dart';
 import 'waifu_command.dart';
 
 final slashCommandsProvider = Provider<SlashCommands>(SlashCommands.new);
@@ -17,15 +18,13 @@ class SlashCommands {
 
   Future<void> initialize() async {
     final slashCommands = [
-      SlashCommand(
-        runable: WaifuCommand(),
-        name: 'waifu',
-        description: 'Get a random waifu image by tag.',
-      )
+      WaifuCommand().command,
+      GeminiCommand().command,
     ];
     for (final command in slashCommands) {
       final runable = command.runable;
       final chatCommand = await runable.initialize(ref);
+      print('chatCommand: $chatCommand');
       if (chatCommand == null || !runable.enabled) {
         disabledCommands.add(command);
         continue;
@@ -47,6 +46,10 @@ abstract class SlashRunnable {
   SlashRunnable();
   bool enabled = false;
   String? disabledReason;
+
+  abstract final String name;
+  abstract final String description;
+  SlashCommand get command => SlashCommand(runable: this, name: name, description: description);
 
   FutureOr<ChatCommand?> initialize(Ref ref);
 }

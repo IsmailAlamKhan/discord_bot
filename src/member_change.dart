@@ -37,7 +37,7 @@ class MemberChange {
       print('Member changed: ${event.member.user?.username}');
       print('Old nickname: ${event.oldMember?.nick}');
       print('New nickname: ${event.member.nick}');
-      final db = ref.read(dbControllerProvider);
+      final db = ref.read(dbProvider);
       if (event.member.nick != null && event.member.nick != event.oldMember?.nick) {
         print('Setting nickname for ${event.member.user?.id} to ${event.member.nick}');
         db.updateDB((db) {
@@ -48,7 +48,7 @@ class MemberChange {
     });
     _streamSubscription2 = bot.onGuildMemberAdd.listen((event) async {
       print('Member added: ${event.member.user?.username} Checking if they have a nickname');
-      final db = ref.read(dbControllerProvider);
+      final db = ref.read(dbProvider);
       final nickname = db.getFromDB((db) => db.getUserNickname(event.member.user!.id.toString()));
       if (nickname != null) {
         print('Setting nickname for ${event.member.user?.username} to $nickname');
