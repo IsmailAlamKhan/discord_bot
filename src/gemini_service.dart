@@ -16,21 +16,11 @@ class GeminiResult {
   final String? error;
   final bool isSuccess;
 
-  const GeminiResult._({
-    this.text,
-    this.error,
-    required this.isSuccess,
-  });
+  const GeminiResult._({this.text, this.error, required this.isSuccess});
 
-  factory GeminiResult.success(String text) => GeminiResult._(
-        text: text,
-        isSuccess: true,
-      );
+  factory GeminiResult.success(String text) => GeminiResult._(text: text, isSuccess: true);
 
-  factory GeminiResult.failure(String error) => GeminiResult._(
-        error: error,
-        isSuccess: false,
-      );
+  factory GeminiResult.failure(String error) => GeminiResult._(error: error, isSuccess: false);
 }
 
 /// Configuration for Gemini text generation
@@ -61,10 +51,7 @@ class GeminiService {
   /// Initialize the Gemini model
 
   /// Generate text from a prompt using Gemini
-  Future<GeminiResult> generateText(
-    String prompt, {
-    GeminiConfig geminiConfig = const GeminiConfig(),
-  }) async {
+  Future<GeminiResult> generateText(String prompt, {GeminiConfig geminiConfig = const GeminiConfig()}) async {
     try {
       final env = ref.read(envProvider);
 
@@ -81,22 +68,16 @@ class GeminiService {
 
       // Create configured model with settings
       final configuredModel = GenerativeModel(
-        model: 'gemini-2.5-pro',
+        model: env.model ?? 'gemini-1.5-flash',
         apiKey: env.geminiApiKey,
-        requestOptions: RequestOptions(
-          apiVersion: 'v1alpha',
-        ),
+        requestOptions: RequestOptions(apiVersion: 'v1alpha'),
         generationConfig: generationConfig,
-        safetySettings: [
-          SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.none),
-        ],
+        safetySettings: [SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.none)],
         systemInstruction: Content.system(geminiContext),
       );
       print('GeminiService prompt: $prompt');
       // Generate content
-      final response = await configuredModel.generateContent([
-        Content.text(prompt),
-      ]);
+      final response = await configuredModel.generateContent([Content.text(prompt)]);
       print('GeminiService: response: $response');
       final text = response.text;
       if (text == null || text.isEmpty) {

@@ -18,6 +18,7 @@ abstract class Env {
   String get guildId => _env['GUILD_ID']!;
   String get geminiApiKey => _env['GEMINI_API_KEY']!;
   String? get geminiContext => _env['GEMINI_CONTEXT'];
+  String? get model => _env['GEMINI_MODEL'];
 
   FutureOr<void> init();
 
