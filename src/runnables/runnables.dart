@@ -15,8 +15,9 @@ abstract class Runnable {
     required MessageCreateEvent messageCreateEvent,
   });
 
-  MessageBuilder messageBuilder(MessageCreateEvent messageCreateEvent) =>
-      MessageBuilder(replyId: messageCreateEvent.message.id);
+  MessageBuilder messageBuilder(MessageCreateEvent messageCreateEvent) => MessageBuilder(
+        referencedMessage: MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
+      );
   MessageBuilder messageBuilderWithoutReply(MessageCreateEvent messageCreateEvent) => MessageBuilder();
 
   Future<void> sendMessage({

@@ -8,7 +8,10 @@ import 'env.dart';
 final botProvider = FutureProvider<NyxxGateway>((ref) async {
   final env = ref.read(envProvider);
   final token = env.botToken;
-  final commandsPlugin = CommandsPlugin(prefix: mentionOr((_) => '!'));
+  final commandsPlugin = CommandsPlugin(
+    prefix: mentionOr((_) => '!'),
+    options: CommandsOptions(logErrors: false),
+  );
   final slashCommands = ref.read(slashCommandsProvider);
   await slashCommands.initialize();
   final commands = slashCommands.enabledCommands;
@@ -28,10 +31,10 @@ final botProvider = FutureProvider<NyxxGateway>((ref) async {
           content: 'Invalid input: `${error.input.remaining}`',
         ));
       } else {
-        print('Uncaught error: $error');
+        // print('Uncaught error: $error');
       }
     } else {
-      print('Uncaught error: $error');
+      // print('Uncaught error: $error');
     }
   });
 

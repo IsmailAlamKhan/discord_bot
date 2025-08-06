@@ -32,10 +32,6 @@ class StoreAllNickNames {
       }
     }
     print('StoreAllNickNames: nickNames: $nickNames');
-    for (final MapEntry(:key, :value) in nickNames.entries) {
-      final id = key;
-      final nickName = value;
-      db.updateDB((db) => db.setUserNickname(id, nickName));
-    }
+    db.updateDB((db) => db.setMultipleUserNicknames(nickNames));
   }
 }

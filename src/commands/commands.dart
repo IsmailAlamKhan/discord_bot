@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:riverpod/riverpod.dart';
 
-import 'gemini_command.dart';
+import 'ask_command.dart';
 import 'waifu_command.dart';
 
 final slashCommandsProvider = Provider<SlashCommands>(SlashCommands.new);
@@ -19,7 +19,7 @@ class SlashCommands {
   Future<void> initialize() async {
     final slashCommands = [
       WaifuCommand().command,
-      GeminiCommand().command,
+      AskCommand().command,
     ];
     for (final command in slashCommands) {
       final runable = command.runable;

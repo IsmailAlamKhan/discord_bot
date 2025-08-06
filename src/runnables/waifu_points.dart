@@ -36,6 +36,11 @@ class WaifuPointsRunnable extends Runnable {
     final message = isCurrentUser
         ? 'You have $points waifu points. You need $next more points to get a reward.'
         : '<@${member.id.value}> has $points waifu points. They need $next more points to get a reward.';
-    await channel.sendMessage(MessageBuilder(content: message, replyId: messageCreateEvent.message.id));
+    await channel.sendMessage(
+      MessageBuilder(
+        content: message,
+        referencedMessage: MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
+      ),
+    );
   }
 }

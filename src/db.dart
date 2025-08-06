@@ -78,6 +78,11 @@ class DB {
     userNicknames[userId] = nickname;
     return this;
   }
+
+  DB setMultipleUserNicknames(Map<String, String> userNicknames) {
+    this.userNicknames.addAll(userNicknames);
+    return this;
+  }
 }
 
 class DBController {

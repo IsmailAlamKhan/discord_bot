@@ -38,7 +38,7 @@ class ConfigRunnable extends Runnable {
             color: EmdedColor.red,
             content: 'Timed out',
             description: 'You took too long to respond. Please try running the command again.',
-          )..replyId = messageCreateEvent.message.id,
+          )..referencedMessage = MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
         );
         _timerForEachInteraction?.cancel();
       });
@@ -55,14 +55,14 @@ class ConfigRunnable extends Runnable {
       message: createAlertMessage(
         color: EmdedColor.green,
         content: 'Welcome to the config command. This command will help you set up the bot for the first time.',
-      )..replyId = messageCreateEvent.message.id,
+      )..referencedMessage = MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
     );
     // await channel.sendMessage(MessageBuilder(content: 'Please provide a prefix for the bot.'));
     await channel.sendMessage(
       createAlertMessage(
         color: EmdedColor.green,
         content: 'Please provide a prefix for the bot.',
-      )..replyId = messageCreateEvent.message.id,
+      )..referencedMessage = MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
     );
     startTimer();
     final prefixCompleter = Completer<String?>();
@@ -95,7 +95,7 @@ class ConfigRunnable extends Runnable {
             color: EmdedColor.red,
             content: 'Invalid prefix.',
             description: 'Prefix should be a single word.',
-          )..replyId = event.message.id,
+          )..referencedMessage = MessageReferenceBuilder.reply(messageId: event.message.id),
         );
 
         return;
@@ -117,10 +117,7 @@ class ConfigRunnable extends Runnable {
         color: EmdedColor.green,
         content: 'Prefix set',
         description: 'Prefix has been set to: $prefix.',
-      )..referencedMessage = MessageReferenceBuilder(
-          messageId: messageCreateEvent.message.id,
-          type: MessageReferenceType.defaultType,
-        ),
+      )..referencedMessage = MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
     );
     ref.read(configProvider).setConfig(Config(prefix: "!${prefix!}"));
     sendMessage(
@@ -130,10 +127,7 @@ class ConfigRunnable extends Runnable {
         content: 'Congrats!',
         description:
             'Config has been set you can now start using the bot using !$prefix. Type !$prefix help for more info',
-      )..referencedMessage = MessageReferenceBuilder(
-          messageId: messageCreateEvent.message.id,
-          type: MessageReferenceType.defaultType,
-        ),
+      )..referencedMessage = MessageReferenceBuilder.reply(messageId: messageCreateEvent.message.id),
     );
     await ref.read(messageListenerProvider).restart();
     await ref.read(memberChangeProvider).restart();

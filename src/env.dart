@@ -5,20 +5,41 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 
 final envProvider = Provider<Env>((ref) {
-  return PlatformEnv();
-  // return FileBasedEnv();
+  // return PlatformEnv();
+  return FileBasedEnv();
 });
 
+const envKeys = {
+  "botToken": {"required": true, "description": "The token for the bot", "key": "BOT_TOKEN"},
+  "footerText": {"required": true, "description": "The footer text for the bot", "key": "FOOTER_TEXT"},
+  "adminUserId": {"required": true, "description": "The ID of the admin user", "key": "ADMIN_USER_ID"},
+  "waifuApiUrl": {"required": true, "description": "The URL of the waifu API", "key": "WAIFU_API_URL"},
+  "guildId": {"required": true, "description": "The ID of the guild", "key": "GUILD_ID"},
+  "aiApiKey": {"required": true, "description": "The API key for the AI", "key": "AI_API_KEY"},
+  "aiPersona": {"required": true, "description": "The persona for the AI", "key": "RED_DOOR_AI_PERSONA"},
+  "aiModel": {"required": true, "description": "The model for the AI", "key": "AI_MODEL"}
+};
+
 abstract class Env {
-  late Map<String, String> _env;
-  String get botToken => _env['BOT_TOKEN']!;
-  String get footerText => _env['FOOTER_TEXT']!;
-  String get adminUserId => _env['ADMIN_USER_ID']!;
-  String get waifuApiUrl => _env['WAIFU_API_URL']!;
-  String get guildId => _env['GUILD_ID']!;
-  String get geminiApiKey => _env['GEMINI_API_KEY']!;
-  String? get geminiContext => _env['GEMINI_CONTEXT'];
-  String? get model => _env['GEMINI_MODEL'];
+  late String botToken;
+  late String footerText;
+  late String adminUserId;
+  late String waifuApiUrl;
+  late String guildId;
+  late String aiApiKey;
+  late String aiPersona;
+  late String aiModel;
+
+  void setEnv(Map<String, String> env) {
+    botToken = env[envKeys['botToken']!['key']]!;
+    footerText = env[envKeys['footerText']!['key']]!;
+    adminUserId = env[envKeys['adminUserId']!['key']]!;
+    waifuApiUrl = env[envKeys['waifuApiUrl']!['key']]!;
+    guildId = env[envKeys['guildId']!['key']]!;
+    aiApiKey = env[envKeys['aiApiKey']!['key']]!;
+    aiPersona = env[envKeys['aiPersona']!['key']]!;
+    aiModel = env[envKeys['aiModel']!['key']]!;
+  }
 
   FutureOr<void> init();
 
@@ -26,17 +47,11 @@ abstract class Env {
     bool isValid = true;
     List<String> errors = [];
     print(env);
-    if (env['BOT_TOKEN'] == null) {
-      errors.add('BOT_TOKEN is not set in the environment variables.');
-    }
-    if (env['FOOTER_TEXT'] == null) {
-      errors.add('FOOTER_TEXT is not set in the environment variables.');
-    }
-    if (env['ADMIN_USER_ID'] == null) {
-      errors.add('ADMIN_USER_ID is not set in the environment variables.');
-    }
-    if (env['GEMINI_API_KEY'] == null) {
-      errors.add('GEMINI_API_KEY is not set in the environment variables.');
+    for (final key in envKeys.keys) {
+      final envKey = envKeys[key]!;
+      if (env[envKey['key']] == null) {
+        errors.add('${envKey['key']} is not set in the environment variables.');
+      }
     }
     if (errors.isNotEmpty) {
       isValid = false;
@@ -63,7 +78,7 @@ class FileBasedEnv extends Env {
     if (!isValid) {
       throw Exception('Environment variables are not set properly: ${errors.join(', ')}');
     } else {
-      _env = env;
+      setEnv(env);
       print('Environment variables loaded successfully.');
     }
   }
@@ -77,7 +92,7 @@ class PlatformEnv extends Env {
     if (!isValid) {
       throw Exception('Environment variables are not set properly: ${errors.join(', ')}');
     } else {
-      _env = env;
+      setEnv(env);
       print('Environment variables loaded successfully.');
     }
   }

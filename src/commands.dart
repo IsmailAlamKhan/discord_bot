@@ -1,5 +1,6 @@
 import '../src/runnables/config_runnable.dart';
 import '../src/runnables/runnables.dart';
+import 'runnables/ask.dart';
 import 'runnables/waifu_points.dart';
 
 class CommandArgument {
@@ -58,5 +59,12 @@ class Command {
     runnable: WaifuPointsRunnable(),
   );
 
-  static const values = [massPing, config, help, waifuPoints];
+  static const ai = Command(
+    command: "ai",
+    alias: 'ai',
+    description: "Ask the bot a question through AI",
+    runnable: AIRunnable(),
+  );
+
+  static const values = [massPing, config, help, waifuPoints, ai];
 }

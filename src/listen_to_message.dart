@@ -84,8 +84,9 @@ class MessageListener {
             reason = 'Command is disabled. Reason: Unknown';
           }
 
-          await msgChannel
-              .sendMessage(MessageBuilder(content: '$reason\nPlease contact the bot owner for further information.'));
+          await msgChannel.sendMessage(
+            MessageBuilder(content: '$reason\nPlease contact the bot owner for further information.'),
+          );
           return;
         }
       }
@@ -95,7 +96,7 @@ class MessageListener {
         return;
       }
       if (!event.message.content.startsWith(prefix)) {
-        print('Message does not start with prefix: $prefix: ${event.message.content}');
+        // print('Message does not start with prefix: $prefix: ${event.message.content}');
         return;
       } else {
         print('Event received: ${event.message.content}');
@@ -105,7 +106,8 @@ class MessageListener {
 
       final command = Command.values.firstWhereOrNull(
         (element) {
-          return element.command == commandList[1] || element.alias == commandList[1];
+          return element.command.toLowerCase() == commandList[1].toLowerCase() ||
+              element.alias?.toLowerCase() == commandList[1].toLowerCase();
         },
       );
       List<String> arguments = [];

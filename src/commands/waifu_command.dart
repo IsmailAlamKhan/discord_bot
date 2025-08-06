@@ -7,6 +7,7 @@ import 'package:riverpod/riverpod.dart';
 
 import '../db.dart';
 import '../dio.dart';
+import '../extensions.dart';
 import '../generate_waifu.dart';
 import '../msg_queue.dart';
 import '../user_waifu_preference.dart';
@@ -141,18 +142,20 @@ class WaifuCommand extends SlashRunnable {
             dbController
                 .updateDB((db) => db.addUserWaifuPreference(UserWaifuPreference(userId: member, waifuTag: category)));
             final channel = context.channel;
-            await context.respond(MessageBuilder(content: 'Generating a waifu image'));
+            final message = await context.respond(MessageBuilder(content: 'Generating a waifu image'));
 
             await channel.manager.triggerTyping(channel.id);
             final waifu = await generateWaifu(category: category, ref: ref);
             waifu.fold(
-              (l) => context.respond(MessageBuilder(content: l)),
+              (l) => message.edit(MessageBuilder(content: l).toMessageUpdateBuilder()),
               (r) async {
                 final (data, fileName) = r;
-                await context.respond(MessageBuilder(
-                  content: 'Here is your waifu image. ${isNSFW ? '**WARNING: NSFW**' : ''}<@$member>',
-                  attachments: [AttachmentBuilder(data: data, fileName: fileName)],
-                ));
+                message.edit(
+                  MessageBuilder(
+                    content: 'Here is your waifu image. ${isNSFW ? '**WARNING: NSFW**' : ''}<@$member>',
+                    attachments: [AttachmentBuilder(data: data, fileName: fileName)],
+                  ).toMessageUpdateBuilder(),
+                );
               },
             );
           },
