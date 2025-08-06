@@ -4,7 +4,7 @@ extension ExtendedMessageBuilder on MessageBuilder {
   MessageUpdateBuilder toMessageUpdateBuilder() {
     return MessageUpdateBuilder(
       content: content,
-      embeds: embeds,
+      embeds: embeds ?? [],
       attachments: attachments ?? [],
       allowedMentions: allowedMentions,
       components: components,
