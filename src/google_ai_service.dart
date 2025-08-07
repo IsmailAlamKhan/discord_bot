@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:riverpod/riverpod.dart';
@@ -138,6 +139,9 @@ class GoogleAIService {
           {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
         ]
       };
+      final encoder = JsonEncoder.withIndent('  ');
+      print('GoogleAIService requestBody: ${encoder.convert(requestBody)}');
+
       final dio = ref.read(dioProvider);
       final response = await dio.post(
         'https://generativelanguage.googleapis.com/v1beta/models/${env.aiModel}:generateContent',
