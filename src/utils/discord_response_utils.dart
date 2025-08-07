@@ -183,6 +183,7 @@ class AICommandUtils {
     Ref? ref,
     ProviderContainer? container,
     required String prompt,
+    required String userid,
   }) async {
     if (ref == null && container == null) {
       return GeminiResult.failure('No ref or container provided');
@@ -196,7 +197,7 @@ class AICommandUtils {
       } else {
         geminiService = container!.read(googleAIServiceProvider);
       }
-      final result = await geminiService.generateText(prompt);
+      final result = await geminiService.generateText(prompt, userid: userid);
       return result;
     } catch (e) {
       // Return a failed result with the error details

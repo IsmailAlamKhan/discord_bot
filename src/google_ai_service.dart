@@ -113,7 +113,8 @@ class GoogleAIService {
 
   GoogleAIService(this.ref);
 
-  Future<GeminiResult> generateText(String prompt, {GeminiConfig geminiConfig = const GeminiConfig()}) async {
+  Future<GeminiResult> generateText(String prompt,
+      {GeminiConfig geminiConfig = const GeminiConfig(), required String userid}) async {
     try {
       final env = ref.read(envProvider);
 
@@ -125,6 +126,7 @@ class GoogleAIService {
           {
             "parts": [
               {"text": geminiContext},
+              {"text": "You are talking to $userid"},
               {"text": prompt}
             ]
           }

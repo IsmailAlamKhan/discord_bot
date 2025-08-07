@@ -29,6 +29,9 @@ class AIRunnable extends Runnable {
     // remove "!{config.prefix}" and "ai" from the prompt
     var prompt = messageCreateEvent.message.content;
     prompt = prompt.replaceFirst(config.prefix, '').replaceFirst('ai', '').trim();
+    final user = await bot.guilds
+        .get(messageCreateEvent.guildId!)
+        .then((guild) => guild.members.get(member.id).then((user) => user.user));
 
     print("Prompt: $prompt");
 
@@ -46,6 +49,7 @@ class AIRunnable extends Runnable {
     final result = await AICommandUtils.callAIService(
       container: ref,
       prompt: prompt,
+      userid: user?.id.toString() ?? member.id.toString(),
     );
 
     // Build and send the response based on the result

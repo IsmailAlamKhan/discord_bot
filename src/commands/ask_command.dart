@@ -49,6 +49,7 @@ class AskCommand extends SlashRunnable {
           final result = await AICommandUtils.callAIService(
             ref: ref,
             prompt: prompt,
+            userid: context.member!.user!.id.toString(),
           );
 
           // Build and send the response based on the result
