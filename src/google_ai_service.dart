@@ -126,9 +126,7 @@ class GoogleAIService {
         "contents": [
           {
             "parts": [
-              {"text": geminiContext},
-              {"text": "You are talking to $userid"},
-              {"text": prompt}
+              {"text": "$geminiContext\n\nYou are talking to $userid\n\nUser Prompt: $prompt"},
             ]
           }
         ],
