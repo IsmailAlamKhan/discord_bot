@@ -44,41 +44,69 @@ class MassPingRunnable extends Runnable {
 
     PartialTextChannel? massPingChannel = cron?.channel;
     final guild = messageCreateEvent.guild!;
+
+    // Create a private channel for mass pinging
     if (massPingChannel == null) {
       try {
         final sender = await member.fetch();
-        final receiver = await guild.members.get(Snowflake.parse(userId.replaceAll(RegExp(r'[<@!>]'), '')));
+        final targetUserId = Snowflake.parse(userId.replaceAll(RegExp(r'[<@!>]'), ''));
+        final receiver = await guild.members.get(targetUserId);
         final senderName = sender.user!.username;
         final receiverName = receiver.user!.username;
-        final channel = await guild.createChannel(
+
+        // Create a private text channel with restricted permissions
+        final createdChannel = await guild.createChannel(
           GuildChannelBuilder(
             name: 'mass-ping-$receiverName-$senderName',
             type: ChannelType.guildText,
+            // Set up permission overwrites to make it private
+            permissionOverwrites: [
+              // Deny @everyone from seeing the channel
+              PermissionOverwriteBuilder(
+                id: guild.id, // @everyone role has the same ID as the guild
+                type: PermissionOverwriteType.role,
+                deny: Permissions.viewChannel,
+              ),
+              // Allow the target user to see and use the channel
+              PermissionOverwriteBuilder(
+                id: targetUserId,
+                type: PermissionOverwriteType.member,
+                allow: Permissions.viewChannel | Permissions.sendMessages | Permissions.readMessageHistory,
+              ),
+              // Allow the sender to see the channel
+              PermissionOverwriteBuilder(
+                id: member.id,
+                type: PermissionOverwriteType.member,
+                allow: Permissions.viewChannel | Permissions.sendMessages | Permissions.readMessageHistory,
+              ),
+              // Allow the bot to see and manage the channel
+              PermissionOverwriteBuilder(
+                id: bot.user.id,
+                type: PermissionOverwriteType.member,
+                allow: Permissions.viewChannel |
+                    Permissions.sendMessages |
+                    Permissions.readMessageHistory |
+                    Permissions.manageChannels,
+              ),
+            ],
           ),
-          auditLogReason: 'Mass ping channel Created for user $receiverName requested by $senderName',
+          auditLogReason: 'Private mass ping channel created for user $receiverName requested by $senderName',
         );
-        massPingChannel = PartialTextChannel(id: channel.id, manager: bot.channels);
+        massPingChannel = PartialTextChannel(id: createdChannel.id, manager: bot.channels);
         await massPingChannel.fetch();
+        print('Created private mass ping channel for: $receiverName requested by $senderName');
       } on Exception catch (e) {
-        if (e.toString().contains('Unknown Channel')) {
-          print('Channel not found in the guild.');
-        } else {
-          print('Error creating channel: $e');
-        }
-        massPingChannel = null;
+        print('Error creating private channel: $e');
+        await sendMessage(
+          channel: channel,
+          message: msgBuilder..content = 'Could not create private mass ping channel: $e',
+        );
+        return;
       }
     }
 
-    if (massPingChannel == null) {
-      print('Mass ping channel not found in the guild-=----.');
-
-      await sendMessage(
-        channel: channel,
-        message: msgBuilder..content = 'Mass ping channel not found in the guild.',
-      );
-      return;
-    }
-    print('channel id: ${massPingChannel.id.value}');
+    // massPingChannel should always be non-null at this point due to the logic above
+    print('Private mass ping channel id: ${massPingChannel.id.value}');
 
     if (isStop) {
       if (cron == null) {
@@ -91,7 +119,13 @@ class MassPingRunnable extends Runnable {
           channel: channel,
           message: msgBuilder..content = 'Stopping mass ping for user $userId...',
         );
-        await massPingChannel.delete(auditLogReason: 'Mass ping channel deleted.');
+        // Delete the private channel when stopping
+        try {
+          await massPingChannel.delete(auditLogReason: 'Mass ping stopped - removing private channel');
+          print('Deleted private mass ping channel for user $userId');
+        } catch (e) {
+          print('Could not delete private mass ping channel: $e');
+        }
         cron.close();
         pingCrons.remove(key);
         pingCrons.remove(adminKey);
@@ -111,8 +145,9 @@ class MassPingRunnable extends Runnable {
 
     await sendMessage(
       channel: channel,
-      message: msgBuilder..content = 'Starting mass ping for user $userId...',
+      message: msgBuilder..content = 'Starting mass ping for user $userId in a private channel...',
     );
+
     final msg = '$userId ANSWER ME!!!!!!!!!!';
     final memberDetails = await member.get();
 
@@ -129,11 +164,13 @@ class MassPingRunnable extends Runnable {
         ),
       ];
 
-    // massPingChannel.sendMessage(messageBuilder);
-    sendMessage(
+    // Send the first message immediately to the private channel
+    await sendMessage(
       channel: massPingChannel,
       message: messageBuilder,
     );
+
+    // Schedule recurring messages every 2 seconds
     cron.cron.schedule(Schedule.parse('*/2 * * * * *'), () => massPingChannel!.sendMessage(messageBuilder));
   }
 }
