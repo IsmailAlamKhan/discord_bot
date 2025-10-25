@@ -4,25 +4,41 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 
 import 'commands/waifu_command.dart';
+import 'conversation_history.dart';
 import 'encode_json.dart';
+import 'google_ai_service.dart';
 import 'user_waifu_preference.dart';
 
 class DB {
   final Map<int, int> waifuPoints;
   final List<UserWaifuPreference> userWaifuPreferences;
   final Map<String, String> userNicknames;
+  final ConversationHistory conversationHistory;
 
-  DB({required this.waifuPoints, required this.userWaifuPreferences, required this.userNicknames});
+  DB({
+    required this.waifuPoints,
+    required this.userWaifuPreferences,
+    required this.userNicknames,
+    required this.conversationHistory,
+  });
 
   Map<String, dynamic> toMap() {
     return {
       'waifu-points': {for (final e in waifuPoints.entries) e.key.toString(): e.value},
       'user-waifu-preferences': userWaifuPreferences.map((e) => e.toJson()).toList(),
       'user-nicknames': {for (final e in userNicknames.entries) e.key.toString(): e.value},
+      'conversation-history': conversationHistory.toJson(),
     };
   }
 
   factory DB.fromMap(Map<String, dynamic> map) {
+    final conversation = map['conversation-history'];
+    ConversationHistory conversationHistory;
+    if (conversation != null) {
+      conversationHistory = ConversationHistory.fromJson(conversation as List<Map<String, dynamic>>);
+    } else {
+      conversationHistory = ConversationHistory([]);
+    }
     return DB(
       waifuPoints: (map['waifu-points'] as Map<dynamic, dynamic>?)
               ?.map<int, int>((key, value) => MapEntry(int.parse(key), value as int)) ??
@@ -33,6 +49,7 @@ class DB {
       userNicknames: (map['user-nicknames'] as Map<dynamic, dynamic>?)
               ?.map<String, String>((key, value) => MapEntry(key, value as String)) ??
           {},
+      conversationHistory: conversationHistory,
     );
   }
 
@@ -82,6 +99,39 @@ class DB {
   DB setMultipleUserNicknames(Map<String, String> userNicknames) {
     this.userNicknames.addAll(userNicknames);
     return this;
+  }
+
+  DB addConversationHistory(ConversationHistoryItem conversationHistory) {
+    this.conversationHistory.add(conversationHistory);
+    return this;
+  }
+
+  DB setConversationHistory(List<ConversationHistoryItem> conversationHistory) {
+    this.conversationHistory.clear();
+    this.conversationHistory.addAll(conversationHistory);
+    return this;
+  }
+
+  DB removeConversationHistory(ConversationHistoryItem conversationHistory) {
+    this.conversationHistory.remove(conversationHistory);
+    return this;
+  }
+
+  DB removeConversationHistoryByUserId(String userId) {
+    conversationHistory.removeWhere((element) => element.userId == userId);
+    return this;
+  }
+
+  ConversationHistory getConversationHistoryByUserId(String userId) {
+    return ConversationHistory(conversationHistory.where((element) => element.userId == userId).toList());
+  }
+
+  ConversationHistory getConversationHistory() {
+    return conversationHistory;
+  }
+
+  ConversationHistory getConversationHistoryByType(AIType type) {
+    return ConversationHistory(conversationHistory.where((element) => element.type == type).toList());
   }
 }
 

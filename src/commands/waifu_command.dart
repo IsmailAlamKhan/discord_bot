@@ -66,7 +66,7 @@ class WaifuCommand extends SlashRunnable {
     final waifuDio = ref.read(waifuDioProvider);
     try {
       final res = await waifuDio.get('tags?full=true');
-
+      print("RESPONSE FROM WAIFU ${res.data}");
       sfwTags = (res.data['versatile'] as List).map((e) => WaifuTag.fromJson(e)).toList();
       nsfwTags = (res.data['nsfw'] as List).map((e) => WaifuTag.fromJson(e)).toList();
       if (nsfwTags!.isEmpty || sfwTags!.isEmpty) {

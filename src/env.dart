@@ -17,7 +17,15 @@ const envKeys = {
   "guildId": {"required": true, "description": "The ID of the guild", "key": "GUILD_ID"},
   "aiApiKey": {"required": true, "description": "The API key for the AI", "key": "AI_API_KEY"},
   "aiPersona": {"required": true, "description": "The persona for the AI", "key": "RED_DOOR_AI_PERSONA"},
-  "aiModel": {"required": true, "description": "The model for the AI", "key": "AI_MODEL"}
+  "aiModel": {"required": true, "description": "The model for the AI", "key": "AI_MODEL"},
+  "rickrollUrl": {"required": true, "description": "The URL of the rickroll", "key": "RICKROLL_URL"},
+  "conversationHistoryLimit": {
+    "required": true,
+    "description": "The number of messages to keep in the conversation history",
+    "key": "CONVERSATION_HISTORY_LIMIT"
+  },
+  "jockyPrefix": {"required": true, "description": "The prefix for the jocky bot", "key": "JOCKY_PREFIX"},
+  "musicAiPersona": {"required": true, "description": "The persona for the music AI", "key": "MUSIC_AI_PERSONA"},
 };
 
 abstract class Env {
@@ -29,6 +37,10 @@ abstract class Env {
   late String aiApiKey;
   late String aiPersona;
   late String aiModel;
+  late String rickrollUrl;
+  late int conversationHistoryLimit;
+  late String jockyPrefix;
+  late String musicAiPersona;
 
   void setEnv(Map<String, String> env) {
     botToken = env[envKeys['botToken']!['key']]!;
@@ -39,6 +51,10 @@ abstract class Env {
     aiApiKey = env[envKeys['aiApiKey']!['key']]!;
     aiPersona = env[envKeys['aiPersona']!['key']]!;
     aiModel = env[envKeys['aiModel']!['key']]!;
+    rickrollUrl = env[envKeys['rickrollUrl']!['key']]!;
+    conversationHistoryLimit = int.parse(env[envKeys['conversationHistoryLimit']!['key']]!);
+    jockyPrefix = env[envKeys['jockyPrefix']!['key']]!;
+    musicAiPersona = env[envKeys['musicAiPersona']!['key']]!;
   }
 
   FutureOr<void> init();

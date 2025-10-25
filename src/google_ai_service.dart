@@ -3,9 +3,17 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:riverpod/riverpod.dart';
+import 'package:uuid/v4.dart';
 
+import 'conversation_history.dart';
+import 'db.dart';
 import 'dio.dart';
 import 'env.dart';
+
+enum AIType {
+  music,
+  chat,
+}
 
 // Provider for the Gemini service
 final googleAIServiceProvider = Provider<GoogleAIService>((ref) {
@@ -99,6 +107,7 @@ class GeminiConfig {
   final double topP;
   final int topK;
   final List<String> stopSequences;
+  final AIType aiPersona;
 
   const GeminiConfig({
     this.temperature = 0.7,
@@ -106,6 +115,7 @@ class GeminiConfig {
     this.topP = 0.8,
     this.topK = 40,
     this.stopSequences = const [],
+    this.aiPersona = AIType.chat,
   });
 }
 
@@ -114,19 +124,32 @@ class GoogleAIService {
 
   GoogleAIService(this.ref);
 
-  Future<GeminiResult> generateText(String prompt,
-      {GeminiConfig geminiConfig = const GeminiConfig(), required String userid}) async {
+  Future<GeminiResult> generateText(
+    String prompt, {
+    GeminiConfig geminiConfig = const GeminiConfig(),
+    required String userid,
+  }) async {
     try {
+      final db = ref.read(dbProvider);
       final env = ref.read(envProvider);
 
       final geminiContext = env.aiPersona;
+      final musicContext = env.musicAiPersona;
 
       print('GoogleAIService prompt: $prompt');
+      String context = '';
+      ConversationHistory history = await db.getFromDB((db) => db.getConversationHistoryByType(geminiConfig.aiPersona));
+      if (geminiConfig.aiPersona == AIType.music) {
+        context = musicContext;
+      } else {
+        context = geminiContext;
+      }
       final requestBody = {
         "contents": [
           {
             "parts": [
-              {"text": "$geminiContext\n\nYou are talking to $userid\n\nUser Prompt: $prompt"},
+              {"text": history.getContextForAI()},
+              {"text": "$context\n\nYou are talking to $userid\n\nUser Prompt: $prompt"},
             ]
           }
         ],
@@ -152,6 +175,19 @@ class GoogleAIService {
       );
       print('GeminiService: response: ${response.data}');
       final data = GoogleAIResponse.fromJson(response.data);
+      final uuid = UuidV4();
+      db.updateDB(
+        (db) => db.addConversationHistory(
+          ConversationHistoryItem(
+            id: uuid.generate(),
+            type: geminiConfig.aiPersona,
+            userId: userid,
+            query: prompt,
+            aiResponse: data.candidates[0].text,
+            createdAt: DateTime.now(),
+          ),
+        ),
+      );
 
       return GeminiResult.success(data.candidates[0].text);
     } catch (e, stackTrace) {
