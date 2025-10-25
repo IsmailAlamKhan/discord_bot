@@ -19,3 +19,4 @@ dependencies:
   nyxx: ^6.2.1
   nyxx_commands: ^6.0.2
   riverpod: ^2.5.1
+  web_socket_channel: ^3.0.1 # For Lavalink WebSocket connection
