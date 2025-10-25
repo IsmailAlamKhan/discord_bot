@@ -1,29 +1,50 @@
 # 🎵 Music Bot - Quick Start for Other AI
 
+## 🚨 IMPORTANT: Render Deployment Notice
+
+**The user is deploying to Render.com, NOT using Docker Compose!**
+
+👉 **SEE [`RENDER_DEPLOYMENT_GUIDE.md`](RENDER_DEPLOYMENT_GUIDE.md) FOR RENDER-SPECIFIC INSTRUCTIONS**
+
+Key Render differences:
+
+- No `docker-compose.yml` support
+- Use **hosted Lavalink** OR deploy Lavalink as separate Private Service
+- Bot runs as **Background Worker**
+- Private networking between services
+
+---
+
 ## 📚 Documentation Files
 
-1. **IMPLEMENTATION_GUIDE.md** - Complete code for all files (MAIN REFERENCE)
-2. **MUSIC_BOT_IMPLEMENTATION_PLAN.md** - High-level plan and architecture
+1. **RENDER_DEPLOYMENT_GUIDE.md** - ⭐ **RENDER-SPECIFIC DEPLOYMENT** (READ THIS FIRST!)
+2. **IMPLEMENTATION_GUIDE.md** - Complete code for all files
+3. **MUSIC_BOT_IMPLEMENTATION_PLAN.md** - High-level plan and architecture
 
 ## ✅ Already Completed
 
 - `pubspec.yaml` - Added `web_socket_channel: ^3.0.1`
-- `Dockerfile` - Installed Python3, pip, ffmpeg, yt-dlp
-- `docker-compose.yml` - Added Lavalink service
+- `Dockerfile` - Installed Python3, pip, yt-dlp (Render-compatible)
+- ~~`docker-compose.yml`~~ - Not used on Render
 
-## 🚀 What You Need to Do
+## 🚀 What You Need to Do (Render Version)
 
-### Quick Summary (9 Steps):
+### **RECOMMENDED: Use Hosted Lavalink**
 
-1. **Create `lavalink/application.yml`** (copy from IMPLEMENTATION_GUIDE.md)
-2. **Update `.env`** with new environment variables
-3. **Update `src/env.dart`** (add 6 new env variables)
-4. **Create directories:** `src/services`, `src/models`
-5. **Create 3 model files** in `src/models/`
-6. **Create 3 service files** in `src/services/`
-7. **Create `src/commands/play_command.dart`**
-8. **Update `src/commands/commands.dart`** (add PlayCommand import and registration)
-9. **Test with `docker-compose up --build`**
+1. **Update `.env`** with hosted Lavalink credentials (see RENDER_DEPLOYMENT_GUIDE.md)
+2. **Create directories:** `src/services`, `src/models`
+3. **Create 3 model files** in `src/models/`
+4. **Create 3 service files** in `src/services/`
+5. **Update `src/services/lavalink_service.dart`** for HTTPS support
+6. **Create `src/commands/play_command.dart`**
+7. **Update `src/commands/commands.dart`** (add PlayCommand)
+8. **Update `src/env.dart`** (add 6 new env variables)
+9. **Deploy to Render** as Background Worker
+10. **Add environment variables** in Render Dashboard
+
+### Alternative: Self-Host Lavalink
+
+See detailed steps in RENDER_DEPLOYMENT_GUIDE.md
 
 ## 📁 Files You'll Create
 
@@ -43,10 +64,9 @@
 
 - `src/commands/play_command.dart` (80 lines)
 
-### Config (2 files):
+### Config (1 file for Render):
 
-- `lavalink/application.yml` (30 lines)
-- `.env` (add 6 lines)
+- `.env` (add 6 lines with hosted Lavalink URL)
 
 ### Modified (2 files):
 
@@ -88,8 +108,9 @@ Expected: Insult + rickroll
 
 ## 🗑️ Cleanup
 
-Delete these 3 files when done:
+Delete these 4 files when done:
 
 - QUICK_START.md (this file)
+- RENDER_DEPLOYMENT_GUIDE.md
 - IMPLEMENTATION_GUIDE.md
 - MUSIC_BOT_IMPLEMENTATION_PLAN.md

@@ -1,5 +1,7 @@
 # 🎵 Music Bot Feature - Implementation Plan
 
+> 🚨 **RENDER DEPLOYMENT:** This project deploys to Render.com. See [`RENDER_DEPLOYMENT_GUIDE.md`](RENDER_DEPLOYMENT_GUIDE.md) for platform-specific instructions (no docker-compose support).
+
 ## 📊 CURRENT STATUS: 80% Complete - Code Ready, Voice Connection Pending
 
 **What Works:**
