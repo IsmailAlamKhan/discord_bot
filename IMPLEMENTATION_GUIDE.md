@@ -10,64 +10,62 @@
 
 ## 🚀 STEP-BY-STEP IMPLEMENTATION
 
-### STEP 1: Create Lavalink Configuration
+### ✅ USING HOSTED LAVALINK (Recommended)
 
-Create directory: `lavalink/`
+You're using a **free hosted Lavalink server**, so you can skip deploying Lavalink yourself!
 
-Create file: `lavalink/application.yml`
+**No need for:**
 
-```yaml
-server:
-  port: 2333
-  address: 0.0.0.0
+- ❌ `lavalink/application.yml` (not needed)
+- ❌ Separate Lavalink service
+- ❌ `docker-compose.yml` (Render doesn't use it)
 
-lavalink:
-  server:
-    password: "youshallnotpass"
-    sources:
-      youtube: true
-      bandcamp: true
-      soundcloud: true
-      twitch: true
-      vimeo: true
-      http: true
-      local: false
-    bufferDurationMs: 400
-    frameBufferDurationMs: 5000
-    youtubePlaylistLoadLimit: 6
-    playerUpdateInterval: 5
-    youtubeSearchEnabled: true
-    soundcloudSearchEnabled: true
-    gc-warnings: true
-
-metrics:
-  prometheus:
-    enabled: false
-
-logging:
-  file:
-    max-history: 30
-    max-size: 1GB
-  path: ./logs/
-  level:
-    root: INFO
-    lavalink: INFO
-```
+**Just configure the environment variables to point to the hosted server!**
 
 ---
 
-### STEP 2: Update .env File
+### STEP 1: ~~Create Lavalink Configuration~~ ✅ SKIP THIS!
 
-Add these to your `.env` file:
+**You're using hosted Lavalink, so this step is not needed!**
+
+The hosted server at `lavalink.darrennathanael.com` is already configured and running.
+
+---
+
+### STEP 2: Configure Environment Variables
+
+### STEP 2: Configure Environment Variables
+
+**Create or update your `.env` file with these values:**
 
 ```bash
-LAVALINK_HOST=lavalink
-LAVALINK_PORT=2333
+# Discord Bot
+BOT_TOKEN=your_discord_bot_token
+PREFIX=!
+FOOTER_TEXT=Red Door Bot
+ADMIN_USER_ID=your_discord_user_id
+GUILD_ID=your_guild_id
+
+# Waifu API
+WAIFU_API_URL=https://api.waifu.pics
+
+# Google AI
+AI_API_KEY=your_google_ai_api_key
+RED_DOOR_AI_PERSONA=Your AI persona
+AI_MODEL=gemini-1.5-flash
+
+# 🎵 HOSTED LAVALINK (Free)
+LAVALINK_HOST=lavalink.darrennathanael.com
+LAVALINK_PORT=443
 LAVALINK_PASSWORD=youshallnotpass
+
+# Music Bot Settings
 RICKROLL_URL=https://www.youtube.com/watch?v=4YweTt_Usjg
 CONVERSATION_HISTORY_LIMIT=10
 MUSIC_AI_PERSONA="You are a sassy DJ bot. Analyze music requests for: 1) Politeness 2) Music intent 3) Query extraction. Return JSON: {\"isPolite\": bool, \"shouldPlay\": bool, \"query\": string|null, \"replyMessage\": string}. If rude: insult them creatively with swear words. If polite: be friendly."
 ```
+
+**For Render Deployment:** Add these same variables in **Render Dashboard → Your Service → Environment**
 
 ---
 
@@ -204,7 +202,22 @@ class TrackInfo {
 
 ---
 
-### STEP 6: Create Services
+### STEP 5: Create Directory Structure
+
+Run:
+
+```bash
+mkdir -p src/services
+mkdir -p src/models
+```
+
+---
+
+### STEP 6: Create Data Models
+
+---
+
+### STEP 7: Create Services
 
 #### File: `src/services/conversation_history_service.dart`
 
@@ -523,7 +536,7 @@ class PlayCommand extends SlashRunnable {
 
 ---
 
-### STEP 8: Register Play Command
+### STEP 9: Register Play Command
 
 **File:** `src/commands/commands.dart`
 
@@ -545,7 +558,35 @@ final slashCommands = [
 
 ---
 
-### STEP 9: Test It!
+### STEP 10: Deploy to Render!
+
+1. **Push code to GitHub**
+
+2. **Create Render Background Worker:**
+
+   - Go to Render Dashboard
+   - Click "New +" → "Background Worker"
+   - Connect your GitHub repo
+   - Name: `discord-music-bot`
+   - Runtime: **Docker**
+   - Region: Choose closest to you
+
+3. **Add Environment Variables in Render:**
+
+   - Go to "Environment" tab
+   - Add ALL variables from your `.env` file
+   - Make sure `LAVALINK_HOST=lavalink.darrennathanael.com`
+   - Make sure `LAVALINK_PORT=443`
+   - Make sure `LAVALINK_PASSWORD=youshallnotpass`
+
+4. **Deploy!**
+   - Click "Create Background Worker"
+   - Wait for build and deployment
+   - Check logs for: `Environment variables loaded successfully`
+
+---
+
+### STEP 11: Test It!
 
 1. **Start services:**
 
@@ -562,10 +603,20 @@ docker-compose up --build
 
 ## ⚠️ IMPORTANT NOTES
 
-1. **Voice connection NOT fully implemented** - This shows search results but doesn't actually play audio in voice channels yet (Nyxx v6 voice API needs more research)
-2. **Conversation history is in-memory** - Lost on restart
-3. **No queue system** - Single track only
-4. **Lavalink must be running** before the bot starts
+1. **Using Hosted Lavalink** - Free and maintained by third party
+2. **Voice connection NOT fully implemented** - Shows search results but doesn't play in VC yet (Nyxx v6 voice API needs research)
+3. **Conversation history is in-memory** - Lost on restart
+4. **No queue system** - Single track search only
+5. **Hosted Lavalink limitations** - Shared resources, depends on uptime
+
+### If Hosted Lavalink is Down:
+
+Try alternative hosted servers:
+
+- `https://lavalink-replit.darrennathanael.repl.co/`
+- Check [lavalink.darrennathanael.com](https://lavalink.darrennathanael.com/) for status
+
+Or deploy your own (see RENDER_DEPLOYMENT_GUIDE.md Option 2)
 
 ---
 
