@@ -43,7 +43,8 @@ class MessageListener {
 
       final msgChannel = event.message.channel;
 
-      final member = event.member!;
+      // Get the full Member object instead of PartialMember
+      final member = await event.guild!.members.fetch(event.message.author.id);
 
       if (isBotMentioned) {
         if (currentConfig == null) {
@@ -55,7 +56,7 @@ class MessageListener {
             ref: ref.container,
             arguments: [],
             channel: event.message.channel,
-            member: event.member!,
+            member: member,
             messageCreateEvent: event,
           );
           _streamSubscription?.cancel();
