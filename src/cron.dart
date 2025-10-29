@@ -15,12 +15,14 @@ class PingCronKey extends Equatable {
 
 class PingCronValue extends Equatable {
   final Cron cron;
+  final String initiator;
+  final String pinging;
   final PartialTextChannel channel;
 
-  PingCronValue({required this.cron, required this.channel});
+  PingCronValue({required this.cron, required this.channel, required this.initiator, required this.pinging});
 
   @override
-  List<Object?> get props => [cron, channel];
+  List<Object?> get props => [cron, channel, initiator, pinging];
 
   Future<void> close() => cron.close();
 }
@@ -28,8 +30,13 @@ class PingCronValue extends Equatable {
 class PingCrons {
   final Map<PingCronKey, PingCronValue> pingCrons = {};
 
-  void add(PingCronKey key, PartialTextChannel channel) {
-    pingCrons[key] = PingCronValue(cron: Cron(), channel: channel);
+  void add({
+    required PingCronKey key,
+    required PartialTextChannel channel,
+    required String initiator,
+    required String pinning,
+  }) {
+    pingCrons[key] = PingCronValue(cron: Cron(), channel: channel, initiator: initiator, pinging: pinning);
   }
 
   PingCronValue? get(PingCronKey key) => pingCrons[key];
